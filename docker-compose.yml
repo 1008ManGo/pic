@@ -4,6 +4,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=sms_platform
+    command: --default-authentication-plugin=mysql_native_password
     ports:
       - "3306:3306"
     volumes:
@@ -46,7 +47,7 @@ services:
       - "5000:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=mysql;Database=sms_platform;User=root;Password=password;CharSet=utf8mb4;SslMode=None;
+      - ConnectionStrings__DefaultConnection=Server=mysql;Database=sms_platform;User=root;Password=password;CharSet=utf8mb4;AllowPublicKeyRetrieval=True;SslMode=None;
       - RabbitMQ__ConnectionString=rabbitmq
       - Redis__ConnectionString=redis:6379
       - Jwt__Key=YourSuperSecretKeyForJwtTokenGeneration2024!ThisShouldBeAtLeast32Characters
