@@ -10,9 +10,10 @@ COPY SmsPlatform.Domain/*.csproj ./SmsPlatform.Domain/
 COPY SmsPlatform.Application/*.csproj ./SmsPlatform.Application/
 COPY SmsPlatform.Infrastructure/*.csproj ./SmsPlatform.Infrastructure/
 COPY SmsPlatform.Api/*.csproj ./SmsPlatform.Api/
+COPY SmsPlatform.Tests/*.csproj ./SmsPlatform.Tests/
 
-# 恢复依赖，带超时重试
-RUN dotnet restore --verbosity minimal || dotnet restore --verbosity minimal || dotnet restore
+# 恢复依赖
+RUN dotnet restore
 
 COPY . .
 
