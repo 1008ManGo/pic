@@ -2,29 +2,35 @@
 
 基于 .NET 8 + Vue 3 的企业级短信发送平台，支持 SMPP 协议通道对接。
 
-## 技术栈
-
-| 模块 | 技术 |
-|------|------|
-| 后端 | ASP.NET Core (.NET 8) |
-| 数据库 | MySQL 8.0 |
-| 队列 | RabbitMQ |
-| 缓存 | Redis |
-| 前端 | Vue 3 + Element Plus |
-| 部署 | Docker |
-
-## 快速部署
+## 一键安装（推荐）
 
 ```bash
 # 克隆项目
 git clone https://github.com/1008ManGo/pic.git
 cd pic
 
-# 自动开放端口并启动所有服务（推荐）
-./start.sh
+# 运行一键安装脚本（自动安装Docker、Node.js、前端构建、启动服务）
+chmod +x install.sh
+sudo ./install.sh
+```
 
-# 或者手动启动
-docker-compose up -d
+安装脚本会自动：
+1. 安装 Docker 和 Docker Compose
+2. 安装 Node.js（用于构建前端）
+3. 构建前端
+4. 开放防火墙端口
+5. 启动所有服务
+
+## 快速启动（已安装Docker）
+
+```bash
+# 克隆项目
+git clone https://github.com/1008ManGo/pic.git
+cd pic
+
+# 构建并启动
+chmod +x install.sh
+sudo ./install.sh
 ```
 
 ## 访问地址
@@ -37,15 +43,26 @@ docker-compose up -d
 
 ## 端口说明
 
-| 服务 | 内部端口 | 外部端口 |
-|------|----------|----------|
-| Web | 80 | 18000 |
-| API | 5000 | 18080 |
-| MySQL | 3306 | 13306 |
-| Redis | 6379 | 16379 |
-| RabbitMQ | 5672,15672 | 5672,15672 |
+| 服务 | 端口 |
+|------|------|
+| Web | 18000 |
+| API | 18080 |
+| MySQL | 13306 |
+| Redis | 16379 |
+| RabbitMQ | 5672, 15672 |
 
-## 详细部署教程
+## 技术栈
+
+| 模块 | 技术 |
+|------|------|
+| 后端 | ASP.NET Core (.NET 8) |
+| 数据库 | MySQL 8.0 |
+| 队列 | RabbitMQ |
+| 缓存 | Redis |
+| 前端 | Vue 3 + Element Plus |
+| 部署 | Docker |
+
+## 详细文档
 
 请查看 [部署文档](./docs/DEPLOYMENT.md)
 
@@ -57,20 +74,12 @@ docker-compose up -d
 ├── SmsPlatform.Application/  # 应用服务
 ├── SmsPlatform.Domain/      # 领域模型
 ├── SmsPlatform.Infrastructure/ # 基础设施
-├── sms-web/                 # Vue 3 前端
+├── sms-web/                 # Vue 3 前端源码
+├── web/                    # 前端构建文件
 ├── docs/
 │   └── DEPLOYMENT.md       # 部署教程
 ├── docker-compose.yml       # Docker 编排
 ├── Dockerfile              # API 镜像构建
-└── start.sh               # 一键启动脚本
+├── install.sh              # 一键安装脚本
+└── nginx.conf             # Nginx 配置
 ```
-
-## 功能特性
-
-- 单条/批量短信发送
-- SMPP 协议通道对接
-- 多通道负载均衡
-- GSM7/UCS2 编码自动识别
-- 用户管理/充值
-- 国家独立定价
-- 实时监控告警
