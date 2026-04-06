@@ -59,11 +59,20 @@ else
     log_info "Docker Compose 已安装 ($(docker-compose --version))"
 fi
 
-# 4. 安装 Node.js 22 (Vite 8 需要 Node.js 20+)
-if ! command -v node &> /dev/null || [[ "$(node -v)" < "v20" ]]; then
-    log_info "安装 Node.js 22..."
+# 4. 检查并安装 Node.js 22 (Vite 8 需要 Node.js 20+)
+NODE_VERSION=$(node -v 2>/dev/null | tr -d 'v' || echo "0")
+NODE_MAJOR=$(echo $NODE_VERSION | cut -d. -f1)
+
+if [ "$NODE_MAJOR" -lt 20 ] 2>/dev/null; then
+    log_info "Node.js 版本过低 ($NODE_VERSION)，安装 Node.js 22..."
+    
+    # 卸载旧版本
+    apt-get remove -y nodejs 2>/dev/null || true
+    
+    # 安装 Node.js 22
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     apt-get install -y nodejs
+    
     log_info "Node.js 安装完成 ($(node -v))"
 else
     log_info "Node.js 已安装 ($(node -v))"
@@ -79,6 +88,7 @@ fi
 if [ ! -d "sms-web/dist" ] || [ ! -f "sms-web/dist/index.html" ]; then
     log_info "前端未构建，开始构建..."
     cd sms-web
+    rm -rf node_modules package-lock.json
     npm install
     npm run build
     cd ..

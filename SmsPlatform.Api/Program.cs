@@ -138,6 +138,29 @@ try
         {
             dbContext.Database.EnsureCreated();
             Log.Information("Database initialized successfully");
+            
+            // 创建默认管理员账号
+            using var scope = app.Services.CreateScope();
+            var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+            try
+            {
+                var users = await userService.GetAllUsersAsync(1, 1);
+                if (!users.Any())
+                {
+                    await userService.CreateUserAsync(new SmsPlatform.Application.DTOs.UserCreateRequest(
+                        "admin",
+                        "Admin@123456",
+                        "admin@example.com",
+                        "System Administration",
+                        1000
+                    ));
+                    Log.Information("Default admin user created: admin / Admin@123456");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to create default admin user");
+            }
         }
         catch (Exception ex)
         {
