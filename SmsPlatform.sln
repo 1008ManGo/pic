@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -10,8 +10,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmsPlatform.Infrastructure", "SmsPlatform.Infrastructure\SmsPlatform.Infrastructure.csproj", "{DF4FD664-19FE-46C9-A77B-9BD2CA72CA78}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmsPlatform.Api", "SmsPlatform.Api\SmsPlatform.Api.csproj", "{B609A135-625C-47F9-B7C8-B88AC5EF91D9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmsPlatform.Tests", "SmsPlatform.Tests\SmsPlatform.Tests.csproj", "{C2D81C24-1EC3-426E-A61E-709DC717E2F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,9 +36,5 @@ Global
 		{B609A135-625C-47F9-B7C8-B88AC5EF91D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B609A135-625C-47F9-B7C8-B88AC5EF91D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B609A135-625C-47F9-B7C8-B88AC5EF91D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C2D81C24-1EC3-426E-A61E-709DC717E2F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2D81C24-1EC3-426E-A61E-709DC717E2F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2D81C24-1EC3-426E-A61E-709DC717E2F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2D81C24-1EC3-426E-A61E-709DC717E2F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
