@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build:
@@ -16,9 +14,12 @@ services:
       - Jwt__Issuer=SmsPlatform
       - Jwt__Audience=SmsPlatformUsers
     depends_on:
-      - mysql
-      - rabbitmq
-      - redis
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_started
 
   web:
     image: nginx:alpine
@@ -39,6 +40,11 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
