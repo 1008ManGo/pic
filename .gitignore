@@ -1,0 +1,28 @@
+# Build results
+bin/
+obj/
+dist/
+*.user
+*.suo
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+appsettings.*.json
+*.pem
+*.key
+
+# Test results
+TestResults/
+coverage/
