@@ -59,10 +59,10 @@ else
     log_info "Docker Compose 已安装 ($(docker-compose --version))"
 fi
 
-# 4. 安装 Node.js (用于构建前端)
-if ! command -v node &> /dev/null; then
-    log_info "安装 Node.js 18..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+# 4. 安装 Node.js 22 (Vite 8 需要 Node.js 20+)
+if ! command -v node &> /dev/null || [[ "$(node -v)" < "v20" ]]; then
+    log_info "安装 Node.js 22..."
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
     apt-get install -y nodejs
     log_info "Node.js 安装完成 ($(node -v))"
 else
@@ -87,10 +87,11 @@ else
     log_info "前端已构建，跳过构建步骤"
 fi
 
-# 6. 复制前端文件到正确位置
+# 6. 复制前端文件到 web 目录
 log_info "复制前端文件到 web 目录..."
+rm -rf web
 mkdir -p web
-cp -r sms-web/dist/* web/ 2>/dev/null || cp -r sms-web/dist/. web/
+cp -r sms-web/dist/* web/
 
 # 7. 开放防火墙端口
 log_info "开放防火墙端口..."
@@ -100,18 +101,19 @@ for PORT in $PORTS; do
     echo "  - 端口 $PORT 已开放"
 done
 
-# 8. 启动服务
+# 8. 停止旧容器（如有）
 log_info "停止旧容器（如有）..."
 docker-compose down 2>/dev/null || true
 
+# 9. 启动服务
 log_info "启动 Docker 服务..."
 docker-compose up -d
 
-# 9. 等待服务启动
-log_info "等待服务启动（15秒）..."
-sleep 15
+# 10. 等待服务启动
+log_info "等待服务启动（20秒）..."
+sleep 20
 
-# 10. 检查状态
+# 11. 检查状态
 echo ""
 echo "========================================="
 echo "安装完成！"
