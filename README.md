@@ -20,7 +20,10 @@
 git clone https://github.com/1008ManGo/pic.git
 cd pic
 
-# 一键启动所有服务
+# 自动开放端口并启动所有服务（推荐）
+./start.sh
+
+# 或者手动启动
 docker-compose up -d
 ```
 
@@ -28,10 +31,19 @@ docker-compose up -d
 
 | 服务 | 地址 |
 |------|------|
-| 前端界面 | http://localhost |
-| 后端API | http://localhost:5000 |
-| Swagger文档 | http://localhost:5000/swagger |
-| RabbitMQ管理 | http://localhost:15672 |
+| 前端界面 | http://你的IP:18000 |
+| API文档 | http://你的IP:18080/swagger |
+| RabbitMQ管理 | http://你的IP:15672 |
+
+## 端口说明
+
+| 服务 | 内部端口 | 外部端口 |
+|------|----------|----------|
+| Web | 80 | 18000 |
+| API | 5000 | 18080 |
+| MySQL | 3306 | 13306 |
+| Redis | 6379 | 16379 |
+| RabbitMQ | 5672,15672 | 5672,15672 |
 
 ## 详细部署教程
 
@@ -49,7 +61,8 @@ docker-compose up -d
 ├── docs/
 │   └── DEPLOYMENT.md       # 部署教程
 ├── docker-compose.yml       # Docker 编排
-└── Dockerfile              # API 镜像构建
+├── Dockerfile              # API 镜像构建
+└── start.sh               # 一键启动脚本
 ```
 
 ## 功能特性
