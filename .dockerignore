@@ -1,0 +1,9 @@
+.git
+.gitignore
+.vs
+.vscode
+README.md
+DEPLOYMENT.md
+start.sh
+*.md
+node_modules
