@@ -1,85 +1,73 @@
-# 企业级短信平台
+基于 Jasmin（Jasmin 做 SMS 网关）我们只需开发 Web UI，前后端一体，然后http提交到jasmin
 
-基于 .NET 8 + Vue 3 的企业级短信发送平台，支持 SMPP 协议通道对接。
+# 🏎️ 一、核心技术栈（最简）
 
-## 一键安装（推荐）
+* **前后端一体**：
 
-```bash
-# 克隆项目
-git clone https://github.com/1008ManGo/pic.git
-cd pic
+  * **C# + Blazor Server**（UI + 后端一体，免前端框架）
+  * **.NET 8 / 11**
 
-# 运行一键安装脚本（自动安装Docker、Node.js、前端构建、启动服务）
-chmod +x install.sh
-sudo ./install.sh
-```
+* **数据库**：
 
-安装脚本会自动：
-1. 安装 Docker 和 Docker Compose
-2. 安装 Node.js（用于构建前端）
-3. 构建前端
-4. 开放防火墙端口
-5. 启动所有服务
+  **SQL Server Express**
 
-## 快速启动（已安装Docker）
+* **缓存 / 异步**：
 
-```bash
-# 克隆项目
-git clone https://github.com/1008ManGo/pic.git
-cd pic
+  * **Redis**
 
-# 构建并启动
-chmod +x install.sh
-sudo ./install.sh
-```
+* **上游短信通道**：
 
-## 访问地址
+  * **Jasmin HTTP API**（简单、快速，易对接）
 
-| 服务 | 地址 |
-|------|------|
-| 前端界面 | http://你的IP:18000 |
-| API文档 | http://你的IP:18080/swagger |
-| RabbitMQ管理 | http://你的IP:15672 |
+* **Worker/后台任务**：
 
-## 端口说明
+  * 可直接用 **Blazor 后台 Service** 或简单 **C# Timer** 实现
 
-| 服务 | 端口 |
-|------|------|
-| Web | 18000 |
-| API | 18080 |
-| MySQL | 13306 |
-| Redis | 16379 |
-| RabbitMQ | 5672, 15672 |
+---
 
-## 技术栈
+# 🏗️ 二、必须实现的平台功能
 
-| 模块 | 技术 |
-|------|------|
-| 后端 | ASP.NET Core (.NET 8) |
-| 数据库 | MySQL 8.0 |
-| 队列 | RabbitMQ |
-| 缓存 | Redis |
-| 前端 | Vue 3 + Element Plus |
-| 部署 | Docker |
+1. **用户系统** 
+   * 登录
+   * 余额
+   * 购买套餐
 
-## 详细文档
+2. **钱包与计费**
+   * 用户充值
+   * 用户余额
+   * 扣费逻辑（按提交短信扣费）
 
-请查看 [部署文档](./docs/DEPLOYMENT.md)
+3. **短信发送**
 
-## 项目结构
+   * 输入Sender ID、目标号码、内容
+   * 提交 → HTTP 发给 Jasmin
+   * 返回发送结果（成功/失败）
 
-```
-├── SmsPlatform.sln          # .NET 8 解决方案
-├── SmsPlatform.Api/        # Web API
-├── SmsPlatform.Application/  # 应用服务
-├── SmsPlatform.Domain/      # 领域模型
-├── SmsPlatform.Infrastructure/ # 基础设施
-├── sms-web/                 # Vue 3 前端源码
-├── web/                    # 前端构建文件
-├── docs/
-│   └── DEPLOYMENT.md       # 部署教程
-├── docker-compose.yml       # Docker 编排
-├── Dockerfile              # API 镜像构建
-├── install.sh              # 一键安装脚本
-└── nginx.conf             # Nginx 配置
-```
+4. **发送记录**
+
+   * 号码、内容、状态、价格、时间
+   * 简单列表即可
+
+5. **管理后台**（不开放用户注册，管理员手动添加用户)
+   * 为用户单独分配可发送国家，定价
+   * 为用户分配可用通道
+   * 增删查改用户
+   * 手动充值
+   * 查看发送记录
+
+---
+
+# ⚡ 三、队列，DLR回执
+
+* redis队列、失败不重试
+* 可以连接多个jasmin账号，标记不同通道
+* DLR 回执
+* API 外放
+* 限速单通道每秒200TPS
+---
+
+# 🚀 四、开发与上线建议
+
+* **第一步**：Blazor 页面 + HTTP 调用 Jasmin
+* **第二步**：提交扣费 + 余额显示
+* **第三步**：发送记录 + 管理后台
