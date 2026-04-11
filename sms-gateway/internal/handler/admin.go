@@ -98,6 +98,7 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 
 	var req struct {
 		Username    string  `json:"username"`
+		Password    string  `json:"password"`
 		Balance     float64 `json:"balance"`
 		SmppChannel string  `json:"smpp_channel"`
 		CountryCode string  `json:"country_code"`
@@ -114,6 +115,14 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	fields := make(map[string]interface{})
 	if req.Username != "" {
 		fields["username"] = req.Username
+	}
+	if req.Password != "" {
+		hashedPassword, err := service.HashPassword(req.Password)
+		if err != nil {
+			response.InternalServerError(c)
+			return
+		}
+		fields["password"] = hashedPassword
 	}
 	if req.SmppChannel != "" {
 		fields["smpp_channel"] = req.SmppChannel
