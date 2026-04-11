@@ -139,6 +139,8 @@ func ExtractCountryCode(phone string) string {
 	switch {
 	case strings.HasPrefix(phone, "86"):
 		return "CN"
+	case strings.HasPrefix(phone, "852"):
+		return "HK"
 	case strings.HasPrefix(phone, "1"):
 		return "US"
 	case strings.HasPrefix(phone, "44"):
@@ -149,6 +151,8 @@ func ExtractCountryCode(phone string) string {
 		return "KR"
 	case strings.HasPrefix(phone, "91"):
 		return "IN"
+	case strings.HasPrefix(phone, "886"):
+		return "TW"
 	default:
 		return ""
 	}
