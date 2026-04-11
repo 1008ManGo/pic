@@ -22,10 +22,6 @@ RUN apt-get update && apt-get install -y \
 
 COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-
-RUN usermod -u 1000 www-data
-
 WORKDIR /var/www/html
 
 COPY app/php /var/www/html
@@ -35,4 +31,4 @@ RUN chown -R www-data:www-data /var/www/html \
 
 EXPOSE 80
 
-CMD service php8.2-fpm start && nginx
+CMD nginx & php-fpm && tail -f /dev/null

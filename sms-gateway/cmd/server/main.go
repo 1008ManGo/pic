@@ -57,6 +57,10 @@ func main() {
 	tpsManager := tps.NewTPSManager()
 	smppPool := smpp.NewClientPool()
 
+	if err := initSMPPClients(smppPool, channelSvc); err != nil {
+		log.Printf("Warning: Failed to init SMPP clients: %v", err)
+	}
+
 	consumer := worker.NewConsumer(db, redisStream, channelSvc, smsSvc, tpsManager, smppPool, &cfg.SMS)
 	dlrHandler := worker.NewDLRHandler(db, redisStream, smsSvc)
 
@@ -104,6 +108,36 @@ func main() {
 	}
 
 	log.Println("Server exited")
+}
+
+func initSMPPClients(pool *smpp.ClientPool, channelSvc *service.ChannelService) error {
+	channels, err := channelSvc.List()
+	if err != nil {
+		return err
+	}
+
+	for _, ch := range channels {
+		if ch.Status != "active" {
+			continue
+		}
+
+		client := smpp.NewClient(&ch)
+		if err := pool.Add(client); err != nil {
+			log.Printf("Failed to add SMPP client %s: %v", ch.ID, err)
+			continue
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if err := client.Connect(ctx); err != nil {
+			log.Printf("Failed to connect SMPP client %s: %v", ch.ID, err)
+			cancel()
+			continue
+		}
+		cancel()
+		log.Printf("SMPP client %s connected", ch.ID)
+	}
+
+	return nil
 }
 
 func initDB(cfg *config.Config) (*gorm.DB, error) {

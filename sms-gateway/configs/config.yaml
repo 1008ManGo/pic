@@ -1,12 +1,12 @@
 database:
-  host: "localhost"
+  host: "mysql"
   port: 3306
   username: "root"
-  password: "password"
+  password: "root_password"
   name: "sms_platform"
 
 redis:
-  host: "localhost"
+  host: "redis"
   port: 6379
   password: ""
   db: 0

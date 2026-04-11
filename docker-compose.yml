@@ -13,7 +13,6 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
       - mysql_data:/var/lib/mysql
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
@@ -22,7 +21,7 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -41,16 +40,13 @@ services:
       retries: 5
 
   go_gateway:
-    build:
-      context: ./docker/go
-      dockerfile: Dockerfile
+    image: workspace-go_gateway:latest
     container_name: sms_go_gateway
     restart: always
     ports:
       - "8080:8080"
     volumes:
       - ./sms-gateway/configs:/app/configs
-      - go_logs:/app/logs
     depends_on:
       mysql:
         condition: service_healthy
@@ -60,9 +56,7 @@ services:
       - sms_network
 
   php_app:
-    build:
-      context: ./docker/php
-      dockerfile: Dockerfile
+    image: workspace-php_app:latest
     container_name: sms_php_app
     restart: always
     ports:
@@ -78,7 +72,6 @@ services:
 volumes:
   mysql_data:
   redis_data:
-  go_logs:
 
 networks:
   sms_network:

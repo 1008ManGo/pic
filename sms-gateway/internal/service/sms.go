@@ -89,6 +89,31 @@ func (s *SmsService) Send(ctx context.Context, userID int64, phones []string, co
 
 	_ = billingLog
 
+	records := make([]model.SmsRecord, 0, len(normalizedPhones))
+	for _, phone := range normalizedPhones {
+		record := model.SmsRecord{
+			TaskID:      taskID,
+			UserID:      userID,
+			ChannelID:   user.SmppChannel,
+			CountryCode: user.CountryCode,
+			SenderID:    "",
+			Phone:       phone,
+			Content:     content,
+			Encoding:    encodingResult.Encoding,
+			SmsCount:    encodingResult.SmsCount,
+			Price:       user.Price,
+			TotalPrice:  float64(encodingResult.SmsCount) * user.Price,
+			Status:      "pending",
+			CreatedAt:   time.Now(),
+		}
+		records = append(records, record)
+	}
+
+	if err := s.db.Create(&records).Error; err != nil {
+		s.billingSvc.Rollback(userID, taskID)
+		return nil, err
+	}
+
 	for _, phone := range normalizedPhones {
 		task := &model.SmsTask{
 			TaskID:      taskID,

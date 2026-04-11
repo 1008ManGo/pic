@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:alpine AS builder
 
 WORKDIR /build
 
@@ -9,6 +9,7 @@ RUN go mod download
 
 COPY sms-gateway/ ./
 
+RUN go mod tidy
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server ./cmd/server
 
 FROM alpine:latest
