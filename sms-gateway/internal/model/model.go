@@ -7,7 +7,7 @@ import (
 type User struct {
 	ID          int64     `json:"id" gorm:"primaryKey;autoIncrement"`
 	Username    string    `json:"username" gorm:"uniqueIndex;size:64;not null"`
-	Password    string    `json:"-" gorm:"size:255;not null"`
+	Password    string    `json:"password" gorm:"size:255;not null"`
 	Balance     float64   `json:"balance" gorm:"type:decimal(10,4);default:0"`
 	SmppChannel string    `json:"smpp_channel" gorm:"size:32;not null"`
 	CountryCode string    `json:"country_code" gorm:"char(2);not null"`

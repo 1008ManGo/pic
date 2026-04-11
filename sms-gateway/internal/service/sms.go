@@ -63,9 +63,19 @@ func (s *SmsService) Send(ctx context.Context, userID int64, phones []string, co
 		return nil, errors.New(msg)
 	}
 
-	normalizedPhones, _ := parser.NormalizePhones(phones, user.CountryCode)
+	normalizedPhones, parseErrors := parser.NormalizePhones(phones, user.CountryCode)
 	if len(normalizedPhones) == 0 {
+		if len(parseErrors) > 0 {
+			return nil, errors.New(parseErrors[0].Err.Error())
+		}
 		return nil, ErrInvalidPhone
+	}
+
+	for _, phone := range normalizedPhones {
+		phoneCountry := parser.ExtractCountryCode(phone)
+		if phoneCountry != "" && phoneCountry != user.CountryCode {
+			return nil, fmt.Errorf("phone %s country (%s) does not match allowed country (%s)", phone, phoneCountry, user.CountryCode)
+		}
 	}
 
 	encodingResult, err := s.encoder.Encode(content)

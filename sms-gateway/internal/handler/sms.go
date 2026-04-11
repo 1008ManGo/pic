@@ -2,6 +2,7 @@ package handler
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"sms-gateway/internal/service"
@@ -31,15 +32,18 @@ func (h *SmsHandler) Send(c *gin.Context) {
 
 	result, err := h.smsSvc.Send(c.Request.Context(), userID.(int64), req.Phones, req.Content)
 	if err != nil {
-		switch err {
-		case service.ErrInsufficientBalance:
+		errMsg := err.Error()
+		switch {
+		case err == service.ErrInsufficientBalance:
 			response.FailWithMsg(c, response.CodeBalanceInsufficient, "余额不足")
-		case service.ErrUserDisabled:
+		case err == service.ErrUserDisabled:
 			response.FailWithMsg(c, response.CodeUserDisabled, "用户已禁用")
-		case service.ErrInvalidContent:
+		case err == service.ErrInvalidContent:
 			response.FailWithMsg(c, response.CodeInvalidChar, "短信内容包含不支持的字符")
-		case service.ErrInvalidPhone:
+		case err == service.ErrInvalidPhone:
 			response.FailWithMsg(c, response.CodeInvalidPhone, "手机号格式错误")
+		case strings.Contains(errMsg, "does not match"):
+			response.FailWithMsg(c, response.CodeInvalidPhone, errMsg)
 		default:
 			response.InternalServerError(c)
 		}
