@@ -1,10 +1,9 @@
 <?php
 session_start();
 
-$baseUrl = 'http://localhost:8080/api';
+$baseUrl = 'http://sms_go_gateway:8080/api';
 
 $error = '';
-$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
@@ -18,16 +17,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_POSTFIELDS => json_encode(['username' => $username, 'password' => $password])
+            CURLOPT_POSTFIELDS => json_encode(['username' => $username, 'password' => $password]),
+            CURLOPT_TIMEOUT => 10
         ]);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
         curl_close($ch);
         
-        if ($httpCode === 200) {
+        if ($httpCode === 200 && $response) {
             $data = json_decode($response, true);
-            if ($data['code'] === 0) {
+            if ($data && isset($data['code']) && $data['code'] === 0) {
                 $_SESSION['token'] = $data['data']['token'];
                 $_SESSION['user_info'] = $data['data']['user_info'];
                 $_SESSION['username'] = $username;
@@ -38,11 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: user/dashboard.php');
                 }
                 exit;
+            } elseif ($data && isset($data['message'])) {
+                $error = $data['message'];
             } else {
-                $error = $data['message'] ?? '登录失败';
+                $error = '登录失败';
             }
         } else {
-            $error = '服务器错误';
+            $error = '服务错误: ' . ($curlError ?: '无法连接服务器');
         }
     }
 }

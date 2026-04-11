@@ -16,6 +16,7 @@ $isAdmin = ($userInfo['role'] ?? '') === 'admin';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户仪表盘 - 短信平台</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script>window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';</script>
 </head>
 <body>
     <div class="header">

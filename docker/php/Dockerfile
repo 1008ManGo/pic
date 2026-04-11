@@ -10,7 +10,9 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && apt-get install -y libzip-dev unzip \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
         zip \
@@ -21,6 +23,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+# 配置 Redis session handler
+RUN echo "session.save_handler = redis" > /usr/local/etc/php/conf.d/docker-session.ini \
+    && echo "session.save_path = tcp://redis:6379" >> /usr/local/etc/php/conf.d/docker-session.ini \
+    && echo "session.gc_maxlifetime = 86400" >> /usr/local/etc/php/conf.d/docker-session.ini \
+    && echo "session.cookie_path = /" >> /usr/local/etc/php/conf.d/docker-session.ini
 
 WORKDIR /var/www/html
 

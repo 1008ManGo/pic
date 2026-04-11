@@ -19,6 +19,11 @@ if (($userInfo['role'] ?? '') !== 'admin') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台 - 短信平台</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';
+        console.log('[DEBUG] Page loaded, SESSION_TOKEN length:', (window.SESSION_TOKEN || '').length);
+        console.log('[DEBUG] SESSION_TOKEN first 50 chars:', (window.SESSION_TOKEN || '').substring(0, 50));
+    </script>
 </head>
 <body>
     <div class="header">

@@ -13,6 +13,7 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>通道管理 - 短信平台</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script>window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';</script>
 </head>
 <body>
     <div class="header">
