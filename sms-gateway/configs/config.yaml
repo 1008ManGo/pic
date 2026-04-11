@@ -1,0 +1,25 @@
+database:
+  host: "localhost"
+  port: 3306
+  username: "root"
+  password: "password"
+  name: "sms_platform"
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+
+app:
+  host: "0.0.0.0"
+  port: 8080
+  jwt_secret: "your-secret-key-change-in-production"
+
+sms:
+  max_tps: 50
+  queue_name: "sms:tasks"
+  dlq_name: "sms:dlq"
+  dlr_name: "sms:dlr"
+  consumer_group: "sms-workers"
+  dlr_consumer_group: "dlr-workers"
