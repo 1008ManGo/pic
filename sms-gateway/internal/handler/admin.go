@@ -96,14 +96,36 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var user model.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var req struct {
+		Username    string  `json:"username"`
+		Balance     float64 `json:"balance"`
+		SmppChannel string  `json:"smpp_channel"`
+		CountryCode string  `json:"country_code"`
+		Price       float64 `json:"price"`
+		Role        string  `json:"role"`
+		Status      int     `json:"status"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "参数错误")
 		return
 	}
 
-	user.ID = id
-	if err := h.userSvc.Update(&user); err != nil {
+	fields := make(map[string]interface{})
+	if req.Username != "" {
+		fields["username"] = req.Username
+	}
+	if req.SmppChannel != "" {
+		fields["smpp_channel"] = req.SmppChannel
+	}
+	if req.CountryCode != "" {
+		fields["country_code"] = req.CountryCode
+	}
+	if req.Role != "" {
+		fields["role"] = req.Role
+	}
+
+	if err := h.userSvc.UpdateFields(id, fields); err != nil {
 		response.InternalServerError(c)
 		return
 	}
@@ -190,14 +212,45 @@ func (h *AdminHandler) GetChannel(c *gin.Context) {
 func (h *AdminHandler) UpdateChannel(c *gin.Context) {
 	id := c.Param("id")
 
-	var channel model.Channel
-	if err := c.ShouldBindJSON(&channel); err != nil {
+	var req struct {
+		Name     string `json:"name"`
+		IP       string `json:"ip"`
+		Port     int    `json:"port"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+		MaxTPS   int    `json:"max_tps"`
+		Status   string `json:"status"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, "参数错误")
 		return
 	}
 
-	channel.ID = id
-	if err := h.channelSvc.Update(&channel); err != nil {
+	fields := make(map[string]interface{})
+	if req.Name != "" {
+		fields["name"] = req.Name
+	}
+	if req.IP != "" {
+		fields["ip"] = req.IP
+	}
+	if req.Port != 0 {
+		fields["port"] = req.Port
+	}
+	if req.Username != "" {
+		fields["username"] = req.Username
+	}
+	if req.Password != "" {
+		fields["password"] = req.Password
+	}
+	if req.MaxTPS != 0 {
+		fields["max_tps"] = req.MaxTPS
+	}
+	if req.Status != "" {
+		fields["status"] = req.Status
+	}
+
+	if err := h.channelSvc.UpdateFields(id, fields); err != nil {
 		response.InternalServerError(c)
 		return
 	}

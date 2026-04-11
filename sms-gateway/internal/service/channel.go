@@ -45,6 +45,10 @@ func (s *ChannelService) Update(channel *model.Channel) error {
 	return s.db.Save(channel).Error
 }
 
+func (s *ChannelService) UpdateFields(id string, fields map[string]interface{}) error {
+	return s.db.Model(&model.Channel{}).Where("id = ?", id).Updates(fields).Error
+}
+
 func (s *ChannelService) Delete(id string) error {
 	return s.db.Delete(&model.Channel{}, "id = ?", id).Error
 }

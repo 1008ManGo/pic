@@ -83,6 +83,10 @@ func (s *UserService) Update(user *model.User) error {
 	return s.db.Save(user).Error
 }
 
+func (s *UserService) UpdateFields(id int64, fields map[string]interface{}) error {
+	return s.db.Model(&model.User{}).Where("id = ?", id).Updates(fields).Error
+}
+
 func (s *UserService) Delete(id int64) error {
 	return s.db.Delete(&model.User{}, id).Error
 }
