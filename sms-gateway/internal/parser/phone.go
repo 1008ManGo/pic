@@ -21,23 +21,35 @@ func NewPhoneParser() *PhoneParser {
 }
 
 func (p *PhoneParser) Normalize(phone string, defaultCountry string) (string, error) {
-	phone = strings.TrimSpace(phone)
-	if phone == "" {
+	input := strings.TrimSpace(phone)
+	if input == "" {
 		return "", ErrEmptyPhone
 	}
 
-	phone = strings.ReplaceAll(phone, " ", "")
-	phone = strings.ReplaceAll(phone, "-", "")
-	phone = strings.ReplaceAll(phone, "(", "")
-	phone = strings.ReplaceAll(phone, ")", "")
+	input = strings.ReplaceAll(input, " ", "")
+	input = strings.ReplaceAll(input, "-", "")
+	input = strings.ReplaceAll(input, "(", "")
+	input = strings.ReplaceAll(input, ")", "")
+
+	if strings.HasPrefix(input, "00") {
+		input = "+" + input[2:]
+	}
+
+	if !strings.HasPrefix(input, "+") {
+		input = "+" + input
+	}
 
 	region := defaultCountry
 	if region == "" {
 		region = "US"
 	}
 
-	parsed, err := phonenumbers.Parse(phone, region)
+	parsed, err := phonenumbers.Parse(input, region)
 	if err != nil {
+		return "", ErrInvalidFormat
+	}
+
+	if !phonenumbers.IsPossibleNumber(parsed) {
 		return "", ErrInvalidFormat
 	}
 
@@ -49,13 +61,30 @@ func (p *PhoneParser) Normalize(phone string, defaultCountry string) (string, er
 }
 
 func (p *PhoneParser) Validate(phone string) error {
-	phone = strings.TrimSpace(phone)
-	if phone == "" {
+	input := strings.TrimSpace(phone)
+	if input == "" {
 		return ErrEmptyPhone
 	}
 
-	parsed, err := phonenumbers.Parse(phone, "US")
+	input = strings.ReplaceAll(input, " ", "")
+	input = strings.ReplaceAll(input, "-", "")
+	input = strings.ReplaceAll(input, "(", "")
+	input = strings.ReplaceAll(input, ")", "")
+
+	if strings.HasPrefix(input, "00") {
+		input = "+" + input[2:]
+	}
+
+	if !strings.HasPrefix(input, "+") {
+		input = "+" + input
+	}
+
+	parsed, err := phonenumbers.Parse(input, "")
 	if err != nil {
+		return ErrInvalidFormat
+	}
+
+	if !phonenumbers.IsPossibleNumber(parsed) {
 		return ErrInvalidFormat
 	}
 
@@ -67,18 +96,30 @@ func (p *PhoneParser) Validate(phone string) error {
 }
 
 func ExtractCountryCode(phone string) string {
-	phone = strings.TrimSpace(phone)
-	if phone == "" {
+	input := strings.TrimSpace(phone)
+	if input == "" {
 		return ""
 	}
 
-	phone = strings.ReplaceAll(phone, " ", "")
-	phone = strings.ReplaceAll(phone, "-", "")
-	phone = strings.ReplaceAll(phone, "(", "")
-	phone = strings.ReplaceAll(phone, ")", "")
+	input = strings.ReplaceAll(input, " ", "")
+	input = strings.ReplaceAll(input, "-", "")
+	input = strings.ReplaceAll(input, "(", "")
+	input = strings.ReplaceAll(input, ")", "")
 
-	parsed, err := phonenumbers.Parse(phone, "US")
+	if strings.HasPrefix(input, "00") {
+		input = "+" + input[2:]
+	}
+
+	if !strings.HasPrefix(input, "+") {
+		return ""
+	}
+
+	parsed, err := phonenumbers.Parse(input, "")
 	if err != nil {
+		return ""
+	}
+
+	if !phonenumbers.IsValidNumber(parsed) {
 		return ""
 	}
 
