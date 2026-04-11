@@ -326,13 +326,5 @@ func (h *AdminHandler) UpdateSettings(c *gin.Context) {
 }
 
 func (h *AdminHandler) GetCountries(c *gin.Context) {
-	countries := []model.Country{
-		{Code: "CN", Name: "中国"},
-		{Code: "US", Name: "美国"},
-		{Code: "GB", Name: "英国"},
-		{Code: "JP", Name: "日本"},
-		{Code: "KR", Name: "韩国"},
-		{Code: "IN", Name: "印度"},
-	}
-	response.Success(c, countries)
+	response.Success(c, model.CountryList)
 }

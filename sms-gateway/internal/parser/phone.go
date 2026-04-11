@@ -4,6 +4,8 @@ import (
 	"errors"
 	"regexp"
 	"strings"
+
+	"sms-gateway/internal/model"
 )
 
 var (
@@ -136,26 +138,13 @@ func ExtractCountryCode(phone string) string {
 	}
 
 	phone = phone[1:]
-	switch {
-	case strings.HasPrefix(phone, "86"):
-		return "CN"
-	case strings.HasPrefix(phone, "852"):
-		return "HK"
-	case strings.HasPrefix(phone, "1"):
-		return "US"
-	case strings.HasPrefix(phone, "44"):
-		return "GB"
-	case strings.HasPrefix(phone, "81"):
-		return "JP"
-	case strings.HasPrefix(phone, "82"):
-		return "KR"
-	case strings.HasPrefix(phone, "91"):
-		return "IN"
-	case strings.HasPrefix(phone, "886"):
-		return "TW"
-	default:
-		return ""
+	for _, country := range model.CountryList {
+		prefix := country.Prefix[1:]
+		if strings.HasPrefix(phone, prefix) {
+			return country.Code
+		}
 	}
+	return ""
 }
 
 type ParseError struct {

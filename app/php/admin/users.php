@@ -89,11 +89,7 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
                 </div>
                 <div class="form-group">
                     <label>国家代码</label>
-                    <select id="country_code" required>
-                        <option value="CN">中国 (CN)</option>
-                        <option value="US">美国 (US)</option>
-                        <option value="GB">英国 (GB)</option>
-                    </select>
+                    <select id="country_code" required></select>
                 </div>
                 <div class="form-group">
                     <label>价格 (元/条)</label>
@@ -182,12 +178,27 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
             }
         }
         
+        async function loadCountries() {
+            try {
+                const result = await apiGet('/admin/countries');
+                if (result.code === 0) {
+                    const select = document.getElementById('country_code');
+                    select.innerHTML = result.data.map(c => 
+                        `<option value="${c.code}">${c.name} (${c.code})</option>`
+                    ).join('');
+                }
+            } catch (e) {
+                console.error('Failed to load countries:', e);
+            }
+        }
+        
         function showAddModal() {
             document.getElementById('modalTitle').textContent = '添加用户';
             document.getElementById('userForm').reset();
             document.getElementById('editId').value = '';
             document.getElementById('userModal').style.display = 'block';
             loadChannels();
+            loadCountries();
         }
         
         function editUser(user) {
@@ -199,7 +210,7 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
             document.getElementById('price').value = user.price;
             document.getElementById('role').value = user.role;
             document.getElementById('userModal').style.display = 'block';
-            loadChannels().then(() => {
+            Promise.all([loadChannels(), loadCountries()]).then(() => {
                 document.getElementById('smpp_channel').value = user.smpp_channel;
                 document.getElementById('country_code').value = user.country_code;
             });
