@@ -11,7 +11,7 @@
 | 缓存 | Redis | 缓存+Session |
 | 协议 | gosmpp | SMPP3.4短信通道协议 |
 | 手机号解析 | libphonenumber-go | 号码标准化 |
-| 编码 | GSM-7 / UCS-2 | 短信编码 |
+| 编码 | 英文GSM-7 / 非英文UCS-2 | 短信编码 |
 | 部署 | Docker | 一键部署 |
 
 ---
