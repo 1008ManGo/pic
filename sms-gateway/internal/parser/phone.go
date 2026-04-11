@@ -4,8 +4,6 @@ import (
 	"errors"
 	"regexp"
 	"strings"
-
-	"sms-gateway/internal/model"
 )
 
 var (
@@ -14,6 +12,50 @@ var (
 	ErrInvalidPrefix = errors.New("invalid country prefix")
 	ErrInvalidLength = errors.New("invalid phone length")
 )
+
+type phoneCountry struct {
+	code   string
+	prefix string
+}
+
+var phoneCountryMap = []phoneCountry{
+	{"CN", "86"},
+	{"HK", "852"},
+	{"MO", "853"},
+	{"TW", "886"},
+	{"US", "1"},
+	{"GB", "44"},
+	{"JP", "81"},
+	{"KR", "82"},
+	{"IN", "91"},
+	{"SG", "65"},
+	{"MY", "60"},
+	{"TH", "66"},
+	{"VN", "84"},
+	{"PH", "63"},
+	{"ID", "62"},
+	{"AU", "61"},
+	{"NZ", "64"},
+	{"CA", "1"},
+	{"DE", "49"},
+	{"FR", "33"},
+	{"IT", "39"},
+	{"ES", "34"},
+	{"NL", "31"},
+	{"BE", "32"},
+	{"CH", "41"},
+	{"AT", "43"},
+	{"PT", "351"},
+	{"RU", "7"},
+	{"AE", "971"},
+	{"SA", "966"},
+	{"EG", "20"},
+	{"NG", "234"},
+	{"ZA", "27"},
+	{"BR", "55"},
+	{"MX", "52"},
+	{"AR", "54"},
+}
 
 type PhoneParser struct {
 	validPrefixes map[string]bool
@@ -138,10 +180,9 @@ func ExtractCountryCode(phone string) string {
 	}
 
 	phone = phone[1:]
-	for _, country := range model.CountryList {
-		prefix := country.Prefix[1:]
-		if strings.HasPrefix(phone, prefix) {
-			return country.Code
+	for _, m := range phoneCountryMap {
+		if strings.HasPrefix(phone, m.prefix) {
+			return m.code
 		}
 	}
 	return ""
