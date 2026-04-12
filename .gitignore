@@ -1,0 +1,8 @@
+
+# Stress test results
+stress_test_results/
+*.json
+
+# Build artifacts
+sms-gateway/bin/
+sms-gateway/server
