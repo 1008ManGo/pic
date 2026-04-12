@@ -14,83 +14,131 @@ $userInfo = $_SESSION['user_info'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>发送短信 - 短信平台</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../css/style.css">
     <script>window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';</script>
 </head>
 <body>
-    <div class="header">
-        <h2>短信平台</h2>
-        <div class="user-info">
-            <span>欢迎, <?php echo htmlspecialchars($userInfo['username']); ?></span>
-            <span>余额: <strong><?php echo $userInfo['balance']; ?></strong></span>
-            <a href="../api/logout.php" class="logout">退出</a>
-        </div>
-    </div>
-    
-    <div class="layout">
-        <div class="sidebar">
-            <ul>
-                <li><a href="dashboard.php">仪表盘</a></li>
-                <li><a href="send_sms.php" class="active">发送短信</a></li>
-                <li><a href="records.php">短信记录</a></li>
-            </ul>
-        </div>
-        
-        <div class="main-content">
-            <div class="page-header">
-                <h1>发送短信</h1>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-envelope-fill"></i> 短信平台</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> 仪表盘</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="send_sms.php"><i class="bi bi-send"></i> 发送短信</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="records.php"><i class="bi bi-clock-history"></i> 短信记录</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($userInfo['username']); ?>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-wallet2"></i> 余额: <?php echo $userInfo['balance']; ?> 元
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="../api/logout.php">
+                                <i class="bi bi-box-arrow-right"></i> 退出
+                            </a>
+                        </div>
+                    </li>
+                </ul>
             </div>
-            
-            <div class="send-form">
-                <form id="sendForm">
-                    <div class="form-group">
-                        <label>手机号码 (每行一个或用逗号分隔)</label>
-                        <textarea class="phones-input" id="phones" placeholder="+8613800000000&#10;+8613900001111&#10;或: +8613800000000, +8613900001111" required></textarea>
-                        <div style="margin-top: 8px;">
-                            <label for="phoneFile" class="btn btn-secondary" style="display: inline-block; padding: 8px 16px; cursor: pointer;">
-                                📁 从TXT文件导入号码
-                            </label>
-                            <input type="file" id="phoneFile" accept=".txt" style="display: none;">
-                            <span id="phoneFileName" style="margin-left: 10px; color: #666;"></span>
-                        </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0"><i class="bi bi-send"></i> 发送短信</h4>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>发件人ID (3-11位字母或数字，留空则使用系统默认)</label>
-                        <input type="text" id="sender_id" placeholder="如: MyCompany" maxlength="11" pattern="[A-Za-z0-9]{3,11}">
-                        <div style="margin-top: 5px; color: #666; font-size: 12px;">选填，发件人ID将显示在接收方手机上</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>短信内容</label>
-                        <textarea id="content" placeholder="请输入短信内容" required maxlength="500"></textarea>
-                        <div style="margin-top: 5px; color: #666; font-size: 12px;">
-                            <span id="charCount">0</span> / 500 字符
-                            <span id="smsCount" style="margin-left: 15px;"></span>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>费用预览</label>
-                        <div id="costPreview" style="padding: 15px; background: #f5f5f5; border-radius: 5px;">
-                            <div>号码数量: <span id="phoneCount">0</span></div>
-                            <div>短信条数: <span id="totalSms">0</span></div>
-                            <div>单价: <span><?php echo $userInfo['price']; ?></span> 元/条</div>
-                            <div>发件人ID: <span id="senderIdDisplay">未指定</span></div>
-                            <div style="font-size: 18px; font-weight: bold; margin-top: 10px;">
-                                总费用: <span id="totalCost">0</span> 元
+                    <div class="card-body">
+                        <form id="sendForm">
+                            <div class="form-group">
+                                <label for="phones"><i class="bi bi-phone"></i> 手机号码</label>
+                                <textarea class="form-control" id="phones" rows="4" 
+                                    placeholder="+8613800000000&#10;+8613900001111&#10;或: +8613800000000, +8613900001111" required></textarea>
+                                <div class="mt-2">
+                                    <label class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-file-earmark-text"></i> 从TXT文件导入
+                                        <input type="file" id="phoneFile" accept=".txt" style="display: none;">
+                                    </label>
+                                    <span id="phoneFileName" class="ml-2 text-muted"></span>
+                                </div>
                             </div>
-                        </div>
+                            
+                            <div class="form-group">
+                                <label for="sender_id"><i class="bi bi-person-badge"></i> 发件人ID</label>
+                                <input type="text" class="form-control" id="sender_id" 
+                                    placeholder="3-11位字母或数字，留空使用系统默认" 
+                                    maxlength="11" pattern="[A-Za-z0-9]{3,11}">
+                                <small class="form-text text-muted">选填，发件人ID将显示在接收方手机上</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="content"><i class="bi bi-chat-left-text"></i> 短信内容</label>
+                                <textarea class="form-control" id="content" rows="4" 
+                                    placeholder="请输入短信内容" required maxlength="500"></textarea>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <span class="text-muted"><span id="charCount">0</span> / 500 字符</span>
+                                    <span class="text-info" id="smsCount"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="card bg-light mb-3">
+                                <div class="card-body py-2">
+                                    <div class="row text-center">
+                                        <div class="col-3">
+                                            <div class="small text-muted">号码数量</div>
+                                            <div class="h5 mb-0" id="phoneCount">0</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="small text-muted">短信条数</div>
+                                            <div class="h5 mb-0" id="totalSms">0</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="small text-muted">单价</div>
+                                            <div class="h5 mb-0"><?php echo $userInfo['price']; ?> 元</div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="small text-muted">发件人ID</div>
+                                            <div class="h5 mb-0" id="senderIdDisplay">-</div>
+                                        </div>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="text-center">
+                                        <span class="h4 mb-0 text-primary">总费用: <span id="totalCost">0</span> 元</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-lg btn-block">
+                                <i class="bi bi-send"></i> 提交发送
+                            </button>
+                        </form>
+                        
+                        <div id="resultBox" class="mt-3" style="display: none;"></div>
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary">提交发送</button>
-                </form>
-                
-                <div id="resultBox" class="result-box"></div>
+                </div>
             </div>
         </div>
     </div>
-    
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../js/api.js"></script>
     <script>
         const pricePerSms = <?php echo $userInfo['price']; ?>;
@@ -112,8 +160,7 @@ $userInfo = $_SESSION['user_info'];
         
         function validateSenderId(senderId) {
             if (!senderId) return true;
-            const regex = /^[A-Za-z0-9]{3,11}$/;
-            return regex.test(senderId);
+            return /^[A-Za-z0-9]{3,11}$/.test(senderId);
         }
         
         function updatePreview() {
@@ -129,8 +176,8 @@ $userInfo = $_SESSION['user_info'];
             document.getElementById('totalSms').textContent = phoneCount * smsCount;
             document.getElementById('totalCost').textContent = totalCost.toFixed(4);
             document.getElementById('charCount').textContent = content.length;
-            document.getElementById('smsCount').textContent = smsCount > 1 ? `(将分成 ${smsCount} 条发送)` : '';
-            document.getElementById('senderIdDisplay').textContent = senderId || '未指定';
+            document.getElementById('smsCount').textContent = smsCount > 1 ? `(将分成 ${smsCount} 条)` : '';
+            document.getElementById('senderIdDisplay').textContent = senderId || '-';
         }
         
         document.getElementById('phones').addEventListener('input', updatePreview);
@@ -177,9 +224,8 @@ $userInfo = $_SESSION['user_info'];
             }
             
             const resultBox = document.getElementById('resultBox');
-            resultBox.className = 'result-box';
-            resultBox.innerHTML = '<div style="color: blue;">正在提交...</div>';
-            resultBox.classList.add('show');
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> 正在提交...</div>';
             
             const requestBody = {
                 phones: phones,
@@ -196,26 +242,37 @@ $userInfo = $_SESSION['user_info'];
                 if (result.code === 0) {
                     resultBox.innerHTML = `
                         <div class="alert alert-success">
-                            <strong>提交成功!</strong><br>
-                            任务ID: ${result.data.task_id}<br>
-                            号码数量: ${result.data.total_phones}<br>
-                            短信条数: ${result.data.sms_count}<br>
-                            ${result.data.sender_id ? '发件人ID: ' + result.data.sender_id + '<br>' : ''}
-                            总费用: ${result.data.total_cost} 元<br>
-                            余额: ${result.data.balance_after} 元
+                            <h5><i class="bi bi-check-circle"></i> 提交成功!</h5>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>任务ID:</strong> ${result.data.task_id}</p>
+                                    <p class="mb-1"><strong>号码数量:</strong> ${result.data.total_phones}</p>
+                                    <p class="mb-1"><strong>短信条数:</strong> ${result.data.sms_count}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>总费用:</strong> ${result.data.total_cost} 元</p>
+                                    <p class="mb-1"><strong>余额:</strong> ${result.data.balance_after} 元</p>
+                                    ${result.data.sender_id ? '<p class="mb-1"><strong>发件人ID:</strong> ' + result.data.sender_id + '</p>' : ''}
+                                </div>
+                            </div>
                         </div>
                     `;
                     document.getElementById('phones').value = '';
                     document.getElementById('content').value = '';
                     document.getElementById('sender_id').value = '';
+                    document.getElementById('phoneFile').value = '';
+                    document.getElementById('phoneFileName').textContent = '';
                     updatePreview();
                 } else {
-                    resultBox.innerHTML = '<div class="alert alert-error">提交失败: ' + result.message + '</div>';
+                    resultBox.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> 提交失败: ' + result.message + '</div>';
                 }
             } catch (e) {
-                resultBox.innerHTML = '<div class="alert alert-error">请求失败: ' + e.message + '</div>';
+                resultBox.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> 请求失败: ' + e.message + '</div>';
             }
         });
+        
+        updatePreview();
     </script>
 </body>
 </html>

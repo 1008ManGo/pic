@@ -1,16 +1,12 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['token'])) {
+if (!isset($_SESSION['token']) || $_SESSION['user_info']['role'] !== 'admin') {
     header('Location: ../index.php');
     exit;
 }
 
-$userInfo = $_SESSION['user_info'] ?? [];
-if (($userInfo['role'] ?? '') !== 'admin') {
-    header('Location: ../user/dashboard.php');
-    exit;
-}
+$userInfo = $_SESSION['user_info'];
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -18,115 +14,160 @@ if (($userInfo['role'] ?? '') !== 'admin') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台 - 短信平台</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../css/style.css">
-    <script>
-        window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';
-        console.log('[DEBUG] Page loaded, SESSION_TOKEN length:', (window.SESSION_TOKEN || '').length);
-        console.log('[DEBUG] SESSION_TOKEN first 50 chars:', (window.SESSION_TOKEN || '').substring(0, 50));
-    </script>
+    <script>window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';</script>
 </head>
 <body>
-    <div class="header">
-        <h2>短信平台 - 管理后台</h2>
-        <div class="user-info">
-            <span>管理员: <?php echo htmlspecialchars($userInfo['username'] ?? ''); ?></span>
-            <a href="../api/logout.php" class="logout">退出</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-gear-fill"></i> 管理后台</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="dashboard.php"><i class="bi bi-speedometer2"></i> 仪表盘</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="channels.php"><i class="bi bi-broadcast"></i> 通道管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="users.php"><i class="bi bi-people"></i> 用户管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sms_records.php"><i class="bi bi-chat-left-text"></i> 短信记录</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($userInfo['username']); ?>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item" href="#"><i class="bi bi-shield"></i> 管理员</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item text-danger" href="../api/logout.php">
+                                <i class="bi bi-box-arrow-right"></i> 退出
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-    
-    <div class="layout">
-        <div class="sidebar">
-            <ul>
-                <li><a href="dashboard.php" class="active">仪表盘</a></li>
-                <li><a href="users.php">用户管理</a></li>
-                <li><a href="channels.php">通道管理</a></li>
-                <li><a href="sms_records.php">短信记录</a></li>
-                <li><a href="announcement.php">发布公告</a></li>
-                <li><a href="../user/dashboard.php">返回用户端</a></li>
-            </ul>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <h4 class="mb-3"><i class="bi bi-speedometer2"></i> 管理后台概览</h4>
+        
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people text-primary" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-0" id="userCount">-</h3>
+                        <p class="text-muted mb-0">用户数</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <i class="bi bi-broadcast text-success" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-0" id="channelCount">-</h3>
+                        <p class="text-muted mb-0">通道数</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clock-history text-warning" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-0" id="todayCount">-</h3>
+                        <p class="text-muted mb-0">今日发送</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-circle text-info" style="font-size: 2.5rem;"></i>
+                        <h3 class="mt-2 mb-0" id="successRate">-</h3>
+                        <p class="text-muted mb-0">成功率</p>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <div class="main-content">
-            <div class="page-header">
-                <h1>管理仪表盘</h1>
-            </div>
-            
-            <div class="dashboard-cards">
+        <div class="row mt-3">
+            <div class="col-md-6">
                 <div class="card">
-                    <h3>用户总数</h3>
-                    <div class="value" id="totalUsers">-</div>
-                </div>
-                <div class="card">
-                    <h3>通道总数</h3>
-                    <div class="value" id="totalChannels">-</div>
-                </div>
-                <div class="card">
-                    <h3>今日发送</h3>
-                    <div class="value success" id="todaySms">-</div>
-                </div>
-                <div class="card">
-                    <h3>成功率</h3>
-                    <div class="value" id="successRate">-</div>
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-broadcast"></i> 通道状态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="channelList" class="list-group">
+                            <div class="text-center text-muted py-3">加载中...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="table-container" style="margin-top: 20px;">
-                <h3 style="margin-bottom: 15px;">最近短信记录</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>任务ID</th>
-                            <th>用户</th>
-                            <th>手机号</th>
-                            <th>状态</th>
-                            <th>时间</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recentRecords">
-                        <tr><td colspan="5" style="text-align: center;">加载中...</td></tr>
-                    </tbody>
-                </table>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-people"></i> 用户列表</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="userList" class="list-group">
+                            <div class="text-center text-muted py-3">加载中...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../js/api.js"></script>
     <script>
         async function loadDashboard() {
             try {
-                const [usersRes, channelsRes, recordsRes] = await Promise.all([
-                    apiGet('/admin/users?page=1&limit=1'),
-                    apiGet('/admin/channels'),
-                    apiGet('/admin/sms/records?page=1&limit=10')
+                const [usersResult, channelsResult] = await Promise.all([
+                    apiGet('/admin/users'),
+                    apiGet('/admin/channels')
                 ]);
                 
-                document.getElementById('totalUsers').textContent = usersRes.data?.total || 0;
-                document.getElementById('totalChannels').textContent = channelsRes.data?.length || 0;
-                
-                if (recordsRes.data?.list) {
-                    renderRecentRecords(recordsRes.data.list);
+                if (usersResult.code === 0) {
+                    document.getElementById('userCount').textContent = usersResult.data.total || 0;
+                    
+                    const topUsers = (usersResult.data.list || []).slice(0, 5);
+                    document.getElementById('userList').innerHTML = topUsers.length ? 
+                        topUsers.map(u => '<div class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span><i class="bi bi-person"></i> ' + u.username + '</span>' +
+                            '<span class="badge badge-' + (u.status === 1 ? 'success' : 'secondary') + '">' +
+                            (u.status === 1 ? '正常' : '禁用') + '</span></div>').join('') :
+                        '<div class="text-muted">暂无用户</div>';
                 }
+                
+                if (channelsResult.code === 0) {
+                    document.getElementById('channelCount').textContent = channelsResult.data.length || 0;
+                    
+                    document.getElementById('channelList').innerHTML = (channelsResult.data || []).map(c => 
+                        '<div class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span><i class="bi bi-broadcast"></i> ' + c.name + '</span>' +
+                            '<span class="badge badge-' + (c.status === 'active' ? 'success' : 'secondary') + '">' +
+                            (c.status === 'active' ? '在线' : '离线') + '</span></div>'
+                    ).join('') || '<div class="text-muted">暂无通道</div>';
+                }
+                
+                document.getElementById('todayCount').textContent = '-';
+                document.getElementById('successRate').textContent = '-';
             } catch (e) {
                 console.error('Failed to load dashboard:', e);
             }
-        }
-        
-        function renderRecentRecords(records) {
-            const tbody = document.getElementById('recentRecords');
-            if (!records.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">暂无记录</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = records.map(r => `
-                <tr>
-                    <td title="${r.task_id}">${r.task_id.substring(0, 12)}...</td>
-                    <td>${r.user_id}</td>
-                    <td>${r.phone}</td>
-                    <td><span class="status-badge status-${r.status}">${r.status}</span></td>
-                    <td>${new Date(r.created_at).toLocaleString('zh-CN')}</td>
-                </tr>
-            `).join('');
         }
         
         loadDashboard();

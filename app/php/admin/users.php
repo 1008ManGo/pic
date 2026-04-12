@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'admin') {
+if (!isset($_SESSION['token']) || $_SESSION['user_info']['role'] !== 'admin') {
     header('Location: ../index.php');
     exit;
 }
@@ -12,156 +12,166 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户管理 - 短信平台</title>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../css/style.css">
     <script>window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';</script>
 </head>
 <body>
-    <div class="header">
-        <h2>短信平台 - 管理后台</h2>
-        <div class="user-info">
-            <span>管理员</span>
-            <a href="../api/logout.php" class="logout">退出</a>
-        </div>
-    </div>
-    
-    <div class="layout">
-        <div class="sidebar">
-            <ul>
-                <li><a href="dashboard.php">仪表盘</a></li>
-                <li><a href="users.php" class="active">用户管理</a></li>
-                <li><a href="channels.php">通道管理</a></li>
-                <li><a href="sms_records.php">短信记录</a></li>
-                <li><a href="../user/dashboard.php">返回用户端</a></li>
-            </ul>
-        </div>
-        
-        <div class="main-content">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>用户管理</h1>
-                <button class="btn btn-primary" onclick="showAddModal()" style="width: auto; padding: 10px 20px;">添加用户</button>
-            </div>
-            
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>用户名</th>
-                            <th>余额</th>
-                            <th>通道</th>
-                            <th>国家</th>
-                            <th>价格</th>
-                            <th>角色</th>
-                            <th>状态</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTable">
-                        <tr><td colspan="9" style="text-align: center; padding: 30px;">加载中...</td></tr>
-                    </tbody>
-                </table>
-                
-                <div class="pagination" id="pagination"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-gear-fill"></i> 管理后台</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> 仪表盘</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="channels.php"><i class="bi bi-broadcast"></i> 通道管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="users.php"><i class="bi bi-people"></i> 用户管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="sms_records.php"><i class="bi bi-chat-left-text"></i> 短信记录</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../api/logout.php"><i class="bi bi-box-arrow-right"></i> 退出</a>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
-    
-    <div id="userModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
-        <div style="background: white; max-width: 500px; margin: 100px auto; padding: 30px; border-radius: 10px;">
-            <h2 id="modalTitle" style="margin-bottom: 20px;">添加用户</h2>
-            <form id="userForm">
-                <input type="hidden" id="editId">
-                <div class="form-group">
-                    <label>用户名</label>
-                    <input type="text" id="username" required>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="bi bi-people"></i> 用户管理</h4>
+                <button class="btn btn-primary" onclick="showAddModal()">
+                    <i class="bi bi-plus-circle"></i> 添加用户
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>余额</th>
+                                <th>通道</th>
+                                <th>国家</th>
+                                <th>单价</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userList">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="password">
-                </div>
-                <div class="form-group">
-                    <label>余额</label>
-                    <input type="number" step="0.0001" id="balance" value="0">
-                </div>
-                <div class="form-group">
-                    <label>SMPP通道</label>
-                    <select id="smpp_channel" required></select>
-                </div>
-                <div class="form-group">
-                    <label>国家代码</label>
-                    <select id="country_code" required></select>
-                </div>
-                <div class="form-group">
-                    <label>价格 (元/条)</label>
-                    <input type="number" step="0.0001" id="price" value="0.05" required>
-                </div>
-                <div class="form-group">
-                    <label>角色</label>
-                    <select id="role">
-                        <option value="user">普通用户</option>
-                        <option value="admin">管理员</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">保存</button>
-                    <button type="button" onclick="closeModal()" style="width: auto; padding: 12px 20px; background: #999; color: white; border: none; border-radius: 5px; cursor: pointer;">取消</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
-    
+
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">添加用户</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="editId">
+                        <div class="form-group">
+                            <label>用户名</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label>密码 <small class="text-muted">(留空则不修改)</small></label>
+                            <input type="password" class="form-control" id="password">
+                        </div>
+                        <div class="form-group">
+                            <label>余额</label>
+                            <input type="number" step="0.0001" class="form-control" id="balance" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>SMPP通道</label>
+                            <select class="form-control" id="smpp_channel" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>国家代码</label>
+                            <select class="form-control" id="country_code" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>价格 (元/条)</label>
+                            <input type="number" step="0.0001" class="form-control" id="price" value="0.05" required>
+                        </div>
+                        <div class="form-group">
+                            <label>角色</label>
+                            <select class="form-control" id="role">
+                                <option value="user">普通用户</option>
+                                <option value="admin">管理员</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="submitUser()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../js/api.js"></script>
     <script>
-        let currentPage = 1;
-        
-        async function loadUsers(page = 1) {
-            currentPage = page;
+        async function loadUsers() {
             try {
-                const result = await apiGet(`/admin/users?page=${page}&limit=20`);
+                const result = await apiGet('/admin/users');
                 if (result.code === 0) {
-                    renderTable(result.data.list);
-                    renderPagination(result.data.total, result.data.page, result.data.limit);
+                    renderUsers(result.data.list);
                 }
             } catch (e) {
-                document.getElementById('usersTable').innerHTML = 
-                    `<tr><td colspan="9" style="text-align: center; color: red;">加载失败</td></tr>`;
+                document.getElementById('userList').innerHTML = 
+                    '<tr><td colspan="8" class="text-center text-danger">加载失败</td></tr>';
             }
         }
         
-        function renderTable(users) {
-            const tbody = document.getElementById('usersTable');
-            if (!users.length) {
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">暂无数据</td></tr>';
+        function renderUsers(users) {
+            const tbody = document.getElementById('userList');
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">暂无用户</td></tr>';
                 return;
             }
-            
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td>${u.id}</td>
-                    <td>${u.username}</td>
-                    <td>${u.balance}</td>
-                    <td>${u.smpp_channel}</td>
-                    <td>${u.country_code}</td>
-                    <td>${u.price}</td>
-                    <td>${u.role === 'admin' ? '管理员' : '用户'}</td>
-                    <td><span class="status-badge status-${u.status === 1 ? 'success' : 'error'}">${u.status === 1 ? '正常' : '禁用'}</span></td>
-                    <td>
-                        <button onclick="editUser(${JSON.stringify(u).replace(/"/g, '&quot;')})" style="margin-right: 5px; padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 3px; cursor: pointer;">编辑</button>
-                        <button onclick="adjustBalance(${u.id}, ${u.balance})" style="margin-right: 5px; padding: 5px 10px; border: 1px solid #ddd; background: white; border-radius: 3px; cursor: pointer;">调余额</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-        
-        function renderPagination(total, page, limit) {
-            const totalPages = Math.ceil(total / limit);
-            const pagination = document.getElementById('pagination');
-            
-            let html = '';
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<button class="${i === page ? 'active' : ''}" onclick="loadUsers(${i})">${i}</button>`;
-            }
-            pagination.innerHTML = html;
+            tbody.innerHTML = users.map(u => 
+                '<tr>' +
+                    '<td>' + u.id + '</td>' +
+                    '<td><i class="bi bi-person"></i> ' + u.username + '</td>' +
+                    '<td><span class="text-success">' + u.balance.toFixed(4) + '</span></td>' +
+                    '<td><code>' + u.smpp_channel + '</code></td>' +
+                    '<td>' + u.country_code + '</td>' +
+                    '<td>' + u.price + '</td>' +
+                    '<td><span class="badge badge-' + (u.status === 1 ? 'success' : 'secondary') + '">' +
+                    (u.status === 1 ? '正常' : '禁用') + '</span></td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm btn-outline-primary mr-1" onclick="editUser(' + u.id + ')"><i class="bi bi-pencil"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-' + (u.status === 1 ? 'warning' : 'success') + '" onclick="toggleStatus(' + u.id + ', ' + (u.status === 1 ? 0 : 1) + ')">' +
+                            '<i class="bi bi-' + (u.status === 1 ? 'slash' : 'check') + '"></i></button>' +
+                    '</td>' +
+                '</tr>'
+            ).join('');
         }
         
         async function loadChannels() {
@@ -170,7 +180,7 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
                 if (result.code === 0) {
                     const select = document.getElementById('smpp_channel');
                     select.innerHTML = result.data.map(c => 
-                        `<option value="${c.id}">${c.id} - ${c.name}</option>`
+                        '<option value="' + c.id + '">' + c.id + ' - ' + c.name + '</option>'
                     ).join('');
                 }
             } catch (e) {
@@ -184,7 +194,7 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
                 if (result.code === 0) {
                     const select = document.getElementById('country_code');
                     select.innerHTML = result.data.map(c => 
-                        `<option value="${c.code}">${c.name} (${c.code})</option>`
+                        '<option value="' + c.code + '">' + c.name + ' (' + c.code + ')</option>'
                     ).join('');
                 }
             } catch (e) {
@@ -196,86 +206,79 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
             document.getElementById('modalTitle').textContent = '添加用户';
             document.getElementById('userForm').reset();
             document.getElementById('editId').value = '';
-            document.getElementById('userModal').style.display = 'block';
-            loadChannels();
-            loadCountries();
+            document.getElementById('price').value = '0.05';
+            Promise.all([loadChannels(), loadCountries()]).then(() => $('#userModal').modal('show'));
         }
         
-        function editUser(user) {
-            document.getElementById('modalTitle').textContent = '编辑用户';
-            document.getElementById('editId').value = user.id;
-            document.getElementById('username').value = user.username;
-            document.getElementById('password').value = '';
-            document.getElementById('balance').value = user.balance;
-            document.getElementById('price').value = user.price;
-            document.getElementById('role').value = user.role;
-            document.getElementById('userModal').style.display = 'block';
-            Promise.all([loadChannels(), loadCountries()]).then(() => {
-                document.getElementById('smpp_channel').value = user.smpp_channel;
-                document.getElementById('country_code').value = user.country_code;
-            });
-        }
-        
-        function closeModal() {
-            document.getElementById('userModal').style.display = 'none';
-        }
-        
-        function adjustBalance(userId, currentBalance) {
-            const newBalance = prompt('请输入新余额:', currentBalance);
-            if (newBalance !== null && newBalance !== '') {
-                apiPut(`/admin/users/${userId}/balance`, { balance: parseFloat(newBalance) })
-                    .then(result => {
-                        if (result.code === 0) {
-                            alert('余额调整成功');
-                            loadUsers(currentPage);
-                        } else {
-                            alert('调整失败: ' + result.message);
-                        }
-                    });
+        async function editUser(id) {
+            try {
+                const result = await apiGet('/admin/users');
+                if (result.code === 0) {
+                    const user = result.data.list.find(u => u.id === id);
+                    if (user) {
+                        document.getElementById('modalTitle').textContent = '编辑用户';
+                        document.getElementById('editId').value = user.id;
+                        document.getElementById('username').value = user.username;
+                        document.getElementById('password').value = '';
+                        document.getElementById('balance').value = user.balance;
+                        document.getElementById('price').value = user.price;
+                        document.getElementById('role').value = user.role;
+                        
+                        await Promise.all([loadChannels(), loadCountries()]);
+                        document.getElementById('smpp_channel').value = user.smpp_channel;
+                        document.getElementById('country_code').value = user.country_code;
+                        
+                        $('#userModal').modal('show');
+                    }
+                }
+            } catch (e) {
+                alert('加载用户信息失败');
             }
         }
         
-        document.getElementById('userForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const editId = document.getElementById('editId').value;
-            const data = {
-                username: document.getElementById('username').value,
-                smpp_channel: document.getElementById('smpp_channel').value,
-                country_code: document.getElementById('country_code').value,
-                price: parseFloat(document.getElementById('price').value),
-                role: document.getElementById('role').value,
-                balance: parseFloat(document.getElementById('balance').value || 0)
-            };
-            
+        async function submitUser() {
+            const id = document.getElementById('editId').value;
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            if (password) {
-                data.password = password;
-            }
+            const balance = parseFloat(document.getElementById('balance').value);
+            const smpp_channel = document.getElementById('smpp_channel').value;
+            const country_code = document.getElementById('country_code').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const role = document.getElementById('role').value;
+            
+            const data = { username, balance, smp_channel, country_code, price, role };
+            if (password) data.password = password;
             
             try {
-                let result;
-                if (editId) {
-                    data.status = 1;
-                    result = await apiPut(`/admin/users/${editId}`, data);
-                } else {
-                    data.password = password || '123456';
-                    result = await apiPost('/admin/users', data);
-                }
+                const result = id ? 
+                    await apiPut('/admin/users/' + id, data) :
+                    await apiPost('/admin/users', data);
                 
                 if (result.code === 0) {
-                    alert('保存成功');
-                    closeModal();
-                    loadUsers(currentPage);
+                    $('#userModal').modal('hide');
+                    loadUsers();
                 } else {
                     alert('保存失败: ' + result.message);
                 }
             } catch (e) {
-                alert('请求失败: ' + e.message);
+                alert('保存失败: ' + e.message);
             }
-        });
+        }
         
-        loadUsers(1);
+        async function toggleStatus(id, status) {
+            try {
+                const result = await apiPut('/admin/users/' + id, { status });
+                if (result.code === 0) {
+                    loadUsers();
+                } else {
+                    alert('操作失败: ' + result.message);
+                }
+            } catch (e) {
+                alert('操作失败: ' + e.message);
+            }
+        }
+        
+        loadUsers();
     </script>
 </body>
 </html>
