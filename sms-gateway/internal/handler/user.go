@@ -94,3 +94,10 @@ func (h *UserHandler) GetDashboard(c *gin.Context) {
 		"price":   user.Price,
 	})
 }
+
+func (h *UserHandler) GetAnnouncement(c *gin.Context) {
+	response.Success(c, gin.H{
+		"title":   "系统公告",
+		"content": "欢迎使用短信平台服务",
+	})
+}

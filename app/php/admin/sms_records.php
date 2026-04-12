@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['token']) || $_SESSION['user_info']['role'] !== 'admin') {
+if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'admin') {
     header('Location: ../index.php');
     exit;
 }

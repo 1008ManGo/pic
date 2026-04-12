@@ -113,8 +113,8 @@ $userInfo = $_SESSION['user_info'];
                         <h5 class="mb-0"><i class="bi bi-megaphone"></i> 公告</h5>
                     </div>
                     <div class="card-body">
-                        <div class="alert alert-info mb-0">
-                            <i class="bi bi-info-circle"></i> 欢迎使用短信平台服务。如有疑问请联系客服。
+                        <div class="alert alert-info mb-0" id="announcementContent">
+                            <i class="bi bi-info-circle"></i> 加载中...
                         </div>
                     </div>
                 </div>
@@ -171,5 +171,19 @@ $userInfo = $_SESSION['user_info'];
 
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        async function loadAnnouncement() {
+            try {
+                const result = await apiGet('/announcement');
+                if (result.code === 0 && result.data) {
+                    document.getElementById('announcementContent').innerHTML = '<i class="bi bi-info-circle"></i> ' + (result.data.content || '暂无公告');
+                }
+            } catch (e) {
+                document.getElementById('announcementContent').innerHTML = '<i class="bi bi-info-circle"></i> 欢迎使用短信平台服务';
+            }
+        }
+        loadAnnouncement();
+    </script>
 </body>
 </html>

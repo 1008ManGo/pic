@@ -24,7 +24,6 @@ import (
 	"sms-gateway/internal/smpp"
 	"sms-gateway/internal/tps"
 	"sms-gateway/internal/worker"
-	"sms-gateway/pkg/response"
 )
 
 func main() {
@@ -208,12 +207,7 @@ func setupRouter(
 		}
 
 		user.GET("/dashboard", middleware.AuthMiddleware(), userHandler.GetDashboard)
-		user.GET("/announcement", func(c *gin.Context) {
-			response.Success(c, gin.H{
-				"title":   "系统公告",
-				"content": "欢迎使用短信平台",
-			})
-		})
+		user.GET("/announcement", userHandler.GetAnnouncement)
 
 		api.POST("/sms/send", middleware.AuthMiddleware(), smsHandler.Send)
 		api.GET("/sms/records", middleware.AuthMiddleware(), smsHandler.GetRecords)
