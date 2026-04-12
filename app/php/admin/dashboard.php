@@ -29,7 +29,7 @@ $userInfo = $_SESSION['user_info'];
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="dashboard.php"><i class="bi bi-speedometer2"></i> 仪表盘</a>
+                        <a class="nav-link active" href="dashboard.php"><i class="bi bi-speedometer2"></i> 管理仪表盘</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="channels.php"><i class="bi bi-broadcast"></i> 通道管理</a>
@@ -40,68 +40,65 @@ $userInfo = $_SESSION['user_info'];
                     <li class="nav-item">
                         <a class="nav-link" href="sms_records.php"><i class="bi bi-chat-left-text"></i> 短信记录</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="announcement.php"><i class="bi bi-megaphone"></i> 公告管理</a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($userInfo['username']); ?>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="#"><i class="bi bi-shield"></i> 管理员</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="../api/logout.php">
-                                <i class="bi bi-box-arrow-right"></i> 退出
-                            </a>
-                        </div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../user/dashboard.php"><i class="bi bi-person"></i> 用户面板</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../api/logout.php"><i class="bi bi-box-arrow-right"></i> 退出</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid mt-4">
+    <div class="container-fluid mt-3">
         <h4 class="mb-3"><i class="bi bi-speedometer2"></i> 管理后台概览</h4>
         
         <div class="row">
-            <div class="col-md-3 mb-3">
+            <div class="col-6 col-md-3 mb-3">
                 <div class="card border-primary">
-                    <div class="card-body text-center">
-                        <i class="bi bi-people text-primary" style="font-size: 2.5rem;"></i>
-                        <h3 class="mt-2 mb-0" id="userCount">-</h3>
-                        <p class="text-muted mb-0">用户数</p>
+                    <div class="card-body text-center py-2">
+                        <i class="bi bi-people text-primary"></i>
+                        <h6 class="text-muted mt-1 mb-0">用户数</h6>
+                        <h4 class="mb-0" id="userCount">-</h4>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-6 col-md-3 mb-3">
                 <div class="card border-success">
-                    <div class="card-body text-center">
-                        <i class="bi bi-broadcast text-success" style="font-size: 2.5rem;"></i>
-                        <h3 class="mt-2 mb-0" id="channelCount">-</h3>
-                        <p class="text-muted mb-0">通道数</p>
+                    <div class="card-body text-center py-2">
+                        <i class="bi bi-broadcast text-success"></i>
+                        <h6 class="text-muted mt-1 mb-0">通道数</h6>
+                        <h4 class="mb-0" id="channelCount">-</h4>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-6 col-md-3 mb-3">
                 <div class="card border-warning">
-                    <div class="card-body text-center">
-                        <i class="bi bi-clock-history text-warning" style="font-size: 2.5rem;"></i>
-                        <h3 class="mt-2 mb-0" id="todayCount">-</h3>
-                        <p class="text-muted mb-0">今日发送</p>
+                    <div class="card-body text-center py-2">
+                        <i class="bi bi-clock-history text-warning"></i>
+                        <h6 class="text-muted mt-1 mb-0">今日发送</h6>
+                        <h4 class="mb-0" id="todayCount">-</h4>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-6 col-md-3 mb-3">
                 <div class="card border-info">
-                    <div class="card-body text-center">
-                        <i class="bi bi-check-circle text-info" style="font-size: 2.5rem;"></i>
-                        <h3 class="mt-2 mb-0" id="successRate">-</h3>
-                        <p class="text-muted mb-0">成功率</p>
+                    <div class="card-body text-center py-2">
+                        <i class="bi bi-check-circle text-info"></i>
+                        <h6 class="text-muted mt-1 mb-0">成功率</h6>
+                        <h4 class="mb-0" id="successRate">-</h4>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="row mt-3">
+        <div class="row mt-2">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header bg-white">

@@ -243,10 +243,10 @@ if (!isset($_SESSION['token']) || $_SESSION['user_info']['role'] !== 'admin') {
             const balance = parseFloat(document.getElementById('balance').value);
             const smpp_channel = document.getElementById('smpp_channel').value;
             const country_code = document.getElementById('country_code').value;
-            const price = parseFloat(document.getElementById('price').value);
+            const price = parseFloat(document.getElementById('price').value;
             const role = document.getElementById('role').value;
             
-            const data = { username, balance, smp_channel, country_code, price, role };
+            const data = { username, balance, smpp_channel, country_code, price, role };
             if (password) data.password = password;
             
             try {
