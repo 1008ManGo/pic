@@ -40,6 +40,11 @@ async function apiRequest(endpoint, options = {}) {
         throw new Error('Unauthorized');
     }
     
+    if (data.code === 5000) {
+        console.log('[DEBUG] Server error detected:', data.message);
+        throw new Error(data.message || '服务器内部错误');
+    }
+    
     return data;
 }
 

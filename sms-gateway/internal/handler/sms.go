@@ -44,6 +44,11 @@ func (h *SmsHandler) Send(c *gin.Context) {
 			response.FailWithMsg(c, response.CodeInvalidPhone, "手机号格式错误")
 		case strings.Contains(errMsg, "does not match"):
 			response.FailWithMsg(c, response.CodeInvalidPhone, errMsg)
+		case strings.Contains(errMsg, "invalid phone format"),
+			strings.Contains(errMsg, "not possible number"),
+			strings.Contains(errMsg, "invalid country code"),
+			strings.Contains(errMsg, "phone number is empty"):
+			response.FailWithMsg(c, response.CodeInvalidPhone, errMsg)
 		default:
 			response.InternalServerError(c)
 		}
