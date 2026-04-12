@@ -10,20 +10,23 @@ import (
 )
 
 type AdminHandler struct {
-	userSvc    *service.UserService
-	channelSvc *service.ChannelService
-	smsSvc     *service.SmsService
+	userSvc     *service.UserService
+	channelSvc  *service.ChannelService
+	smsSvc      *service.SmsService
+	announceSvc *service.AnnouncementService
 }
 
 func NewAdminHandler(
 	userSvc *service.UserService,
 	channelSvc *service.ChannelService,
 	smsSvc *service.SmsService,
+	announceSvc *service.AnnouncementService,
 ) *AdminHandler {
 	return &AdminHandler{
-		userSvc:    userSvc,
-		channelSvc: channelSvc,
-		smsSvc:     smsSvc,
+		userSvc:     userSvc,
+		channelSvc:  channelSvc,
+		smsSvc:      smsSvc,
+		announceSvc: announceSvc,
 	}
 }
 
@@ -311,6 +314,26 @@ func (h *AdminHandler) ExportSmsRecords(c *gin.Context) {
 }
 
 func (h *AdminHandler) CreateAnnouncement(c *gin.Context) {
+	var req struct {
+		Title   string `json:"title" binding:"required"`
+		Content string `json:"content" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "参数错误")
+		return
+	}
+
+	announcement := &model.Announcement{
+		Title:   req.Title,
+		Content: req.Content,
+	}
+
+	if err := h.announceSvc.Create(announcement); err != nil {
+		response.InternalServerError(c)
+		return
+	}
+
 	response.SuccessMsg(c, "公告发布成功")
 }
 

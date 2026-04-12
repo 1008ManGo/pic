@@ -7,61 +7,9 @@ if (!isset($_SESSION['token'])) {
 }
 
 $userInfo = $_SESSION['user_info'];
+$pageTitle = '发送短信';
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>发送短信 - 短信平台</title>
-    <link rel="stylesheet" href="../css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../css/style.css">
-    <script>window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';</script>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#"><i class="bi bi-envelope-fill"></i> 短信平台</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> 仪表盘</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="send_sms.php"><i class="bi bi-send"></i> 发送短信</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="records.php"><i class="bi bi-clock-history"></i> 短信记录</a>
-                    </li>
-                    <?php if ($userInfo['role'] === 'admin'): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../admin/dashboard.php"><i class="bi bi-gear"></i> 管理后台</a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" data-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($userInfo['username']); ?>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="#">
-                                <i class="bi bi-wallet2"></i> 余额: <?php echo number_format($userInfo['balance'], 4); ?> 元
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="../api/logout.php">
-                                <i class="bi bi-box-arrow-right"></i> 退出
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<?php include 'header.php'; ?>
 
     <div class="container-fluid mt-4">
         <div class="row">
@@ -99,6 +47,7 @@ $userInfo = $_SESSION['user_info'];
                                     placeholder="请输入短信内容" required maxlength="500"></textarea>
                                 <div class="d-flex justify-content-between mt-2">
                                     <span class="text-muted"><span id="charCount">0</span> / 500 字符</span>
+                                    <span id="encodingType" class="badge badge-info">GSM7</span>
                                     <span class="text-info" id="smsCount"></span>
                                 </div>
                             </div>
@@ -176,11 +125,32 @@ $userInfo = $_SESSION['user_info'];
         
         function countSmsParts(content) {
             const len = content.length;
-            if (len <= 70) return 1;
-            if (len <= 134) return 2;
-            if (len <= 201) return 3;
-            if (len <= 268) return 4;
-            return Math.ceil(len / 67);
+            const isUcs2 = !isGsm7(content);
+            if (isUcs2) {
+                if (len <= 70) return 1;
+                if (len <= 134) return 2;
+                if (len <= 201) return 3;
+                if (len <= 268) return 4;
+                return Math.ceil(len / 67);
+            } else {
+                if (len <= 160) return 1;
+                if (len <= 306) return 2;
+                if (len <= 459) return 3;
+                if (len <= 612) return 4;
+                return Math.ceil(len / 153);
+            }
+        }
+        
+        function isGsm7(content) {
+            for (let i = 0; i < content.length; i++) {
+                const code = content.charCodeAt(i);
+                if (code > 0x7F) return false;
+            }
+            return true;
+        }
+        
+        function getEncodingLabel(content) {
+            return isGsm7(content) ? 'GSM7' : 'UCS2';
         }
         
         function validateSenderId(senderId) {
@@ -196,11 +166,17 @@ $userInfo = $_SESSION['user_info'];
             const phoneCount = phones.length;
             const smsCount = countSmsParts(content);
             const totalCost = phoneCount * smsCount * pricePerSms;
+            const encoding = getEncodingLabel(content);
             
             document.getElementById('phoneCount').textContent = phoneCount;
             document.getElementById('totalSms').textContent = phoneCount * smsCount;
             document.getElementById('totalCost').textContent = totalCost.toFixed(4);
             document.getElementById('charCount').textContent = content.length;
+            
+            const encodingBadge = document.getElementById('encodingType');
+            encodingBadge.textContent = encoding;
+            encodingBadge.className = 'badge ' + (encoding === 'GSM7' ? 'badge-info' : 'badge-warning');
+            
             document.getElementById('smsCount').textContent = smsCount > 1 ? '(将分成 ' + smsCount + ' 条)' : '';
             document.getElementById('senderIdDisplay').textContent = senderId || '-';
         }

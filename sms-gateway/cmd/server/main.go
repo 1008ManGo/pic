@@ -47,11 +47,12 @@ func main() {
 	userSvc := service.NewUserService(db)
 	channelSvc := service.NewChannelService(db)
 	billingSvc := service.NewBillingService(db)
+	announceSvc := service.NewAnnouncementService(db)
 	smsSvc := service.NewSmsService(db, userSvc, channelSvc, billingSvc, redisStream)
 
-	userHandler := handler.NewUserHandler(userSvc)
+	userHandler := handler.NewUserHandler(userSvc, announceSvc)
 	smsHandler := handler.NewSmsHandler(smsSvc)
-	adminHandler := handler.NewAdminHandler(userSvc, channelSvc, smsSvc)
+	adminHandler := handler.NewAdminHandler(userSvc, channelSvc, smsSvc, announceSvc)
 
 	tpsManager := tps.NewTPSManager()
 	smppPool := smpp.NewClientPool()
@@ -198,15 +199,11 @@ func setupRouter(
 	api := router.Group("/api")
 	{
 		api.POST("/login", userHandler.Login)
+		api.POST("/logout", userHandler.Logout)
 
 		user := api.Group("/user")
 		user.Use(middleware.AuthMiddleware())
-		{
-			user.POST("/logout", userHandler.Logout)
-			user.GET("/info", userHandler.GetInfo)
-		}
-
-		user.GET("/dashboard", middleware.AuthMiddleware(), userHandler.GetDashboard)
+		user.GET("/dashboard", userHandler.GetDashboard)
 		user.GET("/announcement", userHandler.GetAnnouncement)
 
 		api.POST("/sms/send", middleware.AuthMiddleware(), smsHandler.Send)

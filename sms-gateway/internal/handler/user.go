@@ -7,11 +7,15 @@ import (
 )
 
 type UserHandler struct {
-	userSvc *service.UserService
+	userSvc     *service.UserService
+	announceSvc *service.AnnouncementService
 }
 
-func NewUserHandler(userSvc *service.UserService) *UserHandler {
-	return &UserHandler{userSvc: userSvc}
+func NewUserHandler(userSvc *service.UserService, announceSvc *service.AnnouncementService) *UserHandler {
+	return &UserHandler{
+		userSvc:     userSvc,
+		announceSvc: announceSvc,
+	}
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
@@ -96,8 +100,16 @@ func (h *UserHandler) GetDashboard(c *gin.Context) {
 }
 
 func (h *UserHandler) GetAnnouncement(c *gin.Context) {
+	announcement, err := h.announceSvc.GetLatest()
+	if err != nil || announcement == nil {
+		response.Success(c, gin.H{
+			"title":   "系统公告",
+			"content": "暂无公告",
+		})
+		return
+	}
 	response.Success(c, gin.H{
-		"title":   "系统公告",
-		"content": "欢迎使用短信平台服务",
+		"title":   announcement.Title,
+		"content": announcement.Content,
 	})
 }

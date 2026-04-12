@@ -5,48 +5,10 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
     header('Location: ../index.php');
     exit;
 }
+
+$pageTitle = '用户管理';
 ?>
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理 - 短信平台</title>
-    <link rel="stylesheet" href="../css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../css/style.css">
-    <script>window.SESSION_TOKEN = '<?php echo $_SESSION["token"] ?? ""; ?>';</script>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#"><i class="bi bi-gear-fill"></i> 管理后台</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2"></i> 仪表盘</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="channels.php"><i class="bi bi-broadcast"></i> 通道管理</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="users.php"><i class="bi bi-people"></i> 用户管理</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="sms_records.php"><i class="bi bi-chat-left-text"></i> 短信记录</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="../api/logout.php"><i class="bi bi-box-arrow-right"></i> 退出</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<?php include 'header.php'; ?>
 
     <div class="container-fluid mt-4">
         <div class="card">
@@ -138,14 +100,26 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
     <script src="../js/api.js"></script>
     <script>
         async function loadUsers() {
+            console.log('[DEBUG] loadUsers called');
             try {
                 const result = await apiGet('/admin/users');
-                if (result.code === 0) {
+                console.log('[DEBUG] API result:', JSON.stringify(result).substring(0, 300));
+                console.log('[DEBUG] result.code:', result?.code);
+                console.log('[DEBUG] result.data:', result?.data);
+                console.log('[DEBUG] result.data.list:', result?.data?.list);
+                
+                if (result && result.code === 0 && result.data && result.data.list) {
+                    console.log('[DEBUG] Rendering users, count:', result.data.list.length);
                     renderUsers(result.data.list);
+                } else {
+                    console.log('[DEBUG] Condition not met, result:', result);
+                    document.getElementById('userList').innerHTML = 
+                        '<tr><td colspan="8" class="text-center text-warning">数据异常</td></tr>';
                 }
             } catch (e) {
+                console.error('[DEBUG] API error:', e);
                 document.getElementById('userList').innerHTML = 
-                    '<tr><td colspan="8" class="text-center text-danger">加载失败</td></tr>';
+                    '<tr><td colspan="8" class="text-center text-danger">加载失败: ' + e.message + '</td></tr>';
             }
         }
         
@@ -243,7 +217,7 @@ if (!isset($_SESSION['token']) || ($_SESSION['user_info']['role'] ?? '') !== 'ad
             const balance = parseFloat(document.getElementById('balance').value);
             const smpp_channel = document.getElementById('smpp_channel').value;
             const country_code = document.getElementById('country_code').value;
-            const price = parseFloat(document.getElementById('price').value;
+            const price = parseFloat(document.getElementById('price').value);
             const role = document.getElementById('role').value;
             
             const data = { username, balance, smpp_channel, country_code, price, role };
