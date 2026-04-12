@@ -46,6 +46,19 @@ $userInfo = $_SESSION['user_info'];
                     <div class="form-group">
                         <label>手机号码 (每行一个或用逗号分隔)</label>
                         <textarea class="phones-input" id="phones" placeholder="+8613800000000&#10;+8613900001111&#10;或: +8613800000000, +8613900001111" required></textarea>
+                        <div style="margin-top: 8px;">
+                            <label for="phoneFile" class="btn btn-secondary" style="display: inline-block; padding: 8px 16px; cursor: pointer;">
+                                📁 从TXT文件导入号码
+                            </label>
+                            <input type="file" id="phoneFile" accept=".txt" style="display: none;">
+                            <span id="phoneFileName" style="margin-left: 10px; color: #666;"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>发件人ID (3-11位字母或数字，留空则使用系统默认)</label>
+                        <input type="text" id="sender_id" placeholder="如: MyCompany" maxlength="11" pattern="[A-Za-z0-9]{3,11}">
+                        <div style="margin-top: 5px; color: #666; font-size: 12px;">选填，发件人ID将显示在接收方手机上</div>
                     </div>
                     
                     <div class="form-group">
@@ -63,6 +76,7 @@ $userInfo = $_SESSION['user_info'];
                             <div>号码数量: <span id="phoneCount">0</span></div>
                             <div>短信条数: <span id="totalSms">0</span></div>
                             <div>单价: <span><?php echo $userInfo['price']; ?></span> 元/条</div>
+                            <div>发件人ID: <span id="senderIdDisplay">未指定</span></div>
                             <div style="font-size: 18px; font-weight: bold; margin-top: 10px;">
                                 总费用: <span id="totalCost">0</span> 元
                             </div>
@@ -96,9 +110,16 @@ $userInfo = $_SESSION['user_info'];
             return Math.ceil(len / 153);
         }
         
+        function validateSenderId(senderId) {
+            if (!senderId) return true;
+            const regex = /^[A-Za-z0-9]{3,11}$/;
+            return regex.test(senderId);
+        }
+        
         function updatePreview() {
             const phones = parsePhones(document.getElementById('phones').value);
             const content = document.getElementById('content').value;
+            const senderId = document.getElementById('sender_id').value.trim();
             
             const phoneCount = phones.length;
             const smsCount = countSmsParts(content);
@@ -109,27 +130,68 @@ $userInfo = $_SESSION['user_info'];
             document.getElementById('totalCost').textContent = totalCost.toFixed(4);
             document.getElementById('charCount').textContent = content.length;
             document.getElementById('smsCount').textContent = smsCount > 1 ? `(将分成 ${smsCount} 条发送)` : '';
+            document.getElementById('senderIdDisplay').textContent = senderId || '未指定';
         }
         
         document.getElementById('phones').addEventListener('input', updatePreview);
         document.getElementById('content').addEventListener('input', updatePreview);
+        document.getElementById('sender_id').addEventListener('input', updatePreview);
+        
+        document.getElementById('phoneFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('phoneFileName').textContent = '已选择: ' + file.name;
+            
+            try {
+                const text = await file.text();
+                const phones = parsePhones(text);
+                
+                const phoneInput = document.getElementById('phones');
+                if (phoneInput.value && !phoneInput.value.endsWith('\n') && !phoneInput.value.endsWith(',')) {
+                    phoneInput.value += '\n';
+                }
+                phoneInput.value += phones.join('\n');
+                
+                updatePreview();
+            } catch (err) {
+                alert('读取文件失败: ' + err.message);
+            }
+        });
         
         document.getElementById('sendForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const phones = parsePhones(document.getElementById('phones').value);
             const content = document.getElementById('content').value;
+            const senderId = document.getElementById('sender_id').value.trim();
+            
+            if (phones.length === 0) {
+                alert('请输入手机号码');
+                return;
+            }
+            
+            if (!validateSenderId(senderId)) {
+                alert('发件人ID格式错误：必须是3-11位字母或数字');
+                return;
+            }
             
             const resultBox = document.getElementById('resultBox');
             resultBox.className = 'result-box';
             resultBox.innerHTML = '<div style="color: blue;">正在提交...</div>';
             resultBox.classList.add('show');
             
+            const requestBody = {
+                phones: phones,
+                content: content
+            };
+            
+            if (senderId) {
+                requestBody.sender_id = senderId;
+            }
+            
             try {
-                const result = await apiPost('/sms/send', {
-                    phones: phones,
-                    content: content
-                });
+                const result = await apiPost('/sms/send', requestBody);
                 
                 if (result.code === 0) {
                     resultBox.innerHTML = `
@@ -138,18 +200,20 @@ $userInfo = $_SESSION['user_info'];
                             任务ID: ${result.data.task_id}<br>
                             号码数量: ${result.data.total_phones}<br>
                             短信条数: ${result.data.sms_count}<br>
+                            ${result.data.sender_id ? '发件人ID: ' + result.data.sender_id + '<br>' : ''}
                             总费用: ${result.data.total_cost} 元<br>
                             余额: ${result.data.balance_after} 元
                         </div>
                     `;
                     document.getElementById('phones').value = '';
                     document.getElementById('content').value = '';
+                    document.getElementById('sender_id').value = '';
                     updatePreview();
                 } else {
-                    resultBox.innerHTML = `<div class="alert alert-error">提交失败: ${result.message}</div>`;
+                    resultBox.innerHTML = '<div class="alert alert-error">提交失败: ' + result.message + '</div>';
                 }
             } catch (e) {
-                resultBox.innerHTML = `<div class="alert alert-error">请求失败: ${e.message}</div>`;
+                resultBox.innerHTML = '<div class="alert alert-error">请求失败: ' + e.message + '</div>';
             }
         });
     </script>

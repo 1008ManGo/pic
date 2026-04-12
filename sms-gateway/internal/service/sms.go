@@ -48,7 +48,7 @@ func NewSmsService(
 	}
 }
 
-func (s *SmsService) Send(ctx context.Context, userID int64, phones []string, content string) (*model.SendSmsResponse, error) {
+func (s *SmsService) Send(ctx context.Context, userID int64, phones []string, content string, senderID string) (*model.SendSmsResponse, error) {
 	user, err := s.userSvc.GetByID(userID)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (s *SmsService) Send(ctx context.Context, userID int64, phones []string, co
 			UserID:      userID,
 			ChannelID:   user.SmppChannel,
 			CountryCode: user.CountryCode,
-			SenderID:    "",
+			SenderID:    senderID,
 			Phone:       phone,
 			Content:     content,
 			Encoding:    encodingResult.Encoding,
@@ -132,7 +132,7 @@ func (s *SmsService) Send(ctx context.Context, userID int64, phones []string, co
 			ChannelID:   user.SmppChannel,
 			CountryCode: user.CountryCode,
 			Price:       user.Price,
-			SenderID:    "",
+			SenderID:    senderID,
 			Phone:       phone,
 			Content:     content,
 			Encoding:    encodingResult.Encoding,
@@ -152,6 +152,7 @@ func (s *SmsService) Send(ctx context.Context, userID int64, phones []string, co
 		PricePerSms:  user.Price,
 		TotalCost:    totalCost,
 		BalanceAfter: balanceAfter,
+		SenderID:     senderID,
 	}
 
 	return response, nil

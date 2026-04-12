@@ -139,6 +139,7 @@ type SendSmsResponse struct {
 	PricePerSms  float64 `json:"price_per_sms"`
 	TotalCost    float64 `json:"total_cost"`
 	BalanceAfter float64 `json:"balance_after"`
+	SenderID     string  `json:"sender_id,omitempty"`
 }
 
 type TaskActivity struct {

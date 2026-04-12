@@ -19,8 +19,9 @@ func NewSmsHandler(smsSvc *service.SmsService) *SmsHandler {
 
 func (h *SmsHandler) Send(c *gin.Context) {
 	var req struct {
-		Phones  []string `json:"phones" binding:"required,min=1"`
-		Content string   `json:"content" binding:"required"`
+		Phones   []string `json:"phones" binding:"required,min=1"`
+		Content  string   `json:"content" binding:"required"`
+		SenderID string   `json:"sender_id"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -30,7 +31,7 @@ func (h *SmsHandler) Send(c *gin.Context) {
 
 	userID, _ := c.Get("user_id")
 
-	result, err := h.smsSvc.Send(c.Request.Context(), userID.(int64), req.Phones, req.Content)
+	result, err := h.smsSvc.Send(c.Request.Context(), userID.(int64), req.Phones, req.Content, req.SenderID)
 	if err != nil {
 		errMsg := err.Error()
 		switch {
