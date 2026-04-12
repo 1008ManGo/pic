@@ -37,6 +37,11 @@ $userInfo = $_SESSION['user_info'];
                     <li class="nav-item">
                         <a class="nav-link" href="records.php"><i class="bi bi-clock-history"></i> 短信记录</a>
                     </li>
+                    <?php if ($userInfo['role'] === 'admin'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../admin/dashboard.php"><i class="bi bi-gear"></i> 管理后台</a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
@@ -45,7 +50,7 @@ $userInfo = $_SESSION['user_info'];
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
                             <a class="dropdown-item" href="#">
-                                <i class="bi bi-wallet2"></i> 余额: <?php echo $userInfo['balance']; ?> 元
+                                <i class="bi bi-wallet2"></i> 余额: <?php echo number_format($userInfo['balance'], 4); ?> 元
                             </a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="../api/logout.php">
@@ -69,7 +74,7 @@ $userInfo = $_SESSION['user_info'];
                         <form id="sendForm">
                             <div class="form-group">
                                 <label for="phones"><i class="bi bi-phone"></i> 手机号码</label>
-                                <textarea class="form-control" id="phones" rows="4" 
+                                <textarea class="form-control" id="phones" rows="3" 
                                     placeholder="+8613800000000&#10;+8613900001111&#10;或: +8613800000000, +8613900001111" required></textarea>
                                 <div class="mt-2">
                                     <label class="btn btn-outline-secondary btn-sm">
@@ -100,27 +105,47 @@ $userInfo = $_SESSION['user_info'];
                             
                             <div class="card bg-light mb-3">
                                 <div class="card-body py-2">
-                                    <div class="row text-center">
+                                    <h6 class="mb-2"><i class="bi bi-calculator"></i> 费用预览</h6>
+                                    <div class="row text-center small mb-2">
                                         <div class="col-3">
-                                            <div class="small text-muted">号码数量</div>
-                                            <div class="h5 mb-0" id="phoneCount">0</div>
+                                            <div class="text-muted">号码数量</div>
+                                            <div class="h6 mb-0" id="phoneCount">0</div>
                                         </div>
                                         <div class="col-3">
-                                            <div class="small text-muted">短信条数</div>
-                                            <div class="h5 mb-0" id="totalSms">0</div>
+                                            <div class="text-muted">短信条数</div>
+                                            <div class="h6 mb-0" id="totalSms">0</div>
                                         </div>
                                         <div class="col-3">
-                                            <div class="small text-muted">单价</div>
-                                            <div class="h5 mb-0"><?php echo $userInfo['price']; ?> 元</div>
+                                            <div class="text-muted">单价</div>
+                                            <div class="h6 mb-0"><?php echo $userInfo['price']; ?> 元</div>
                                         </div>
                                         <div class="col-3">
-                                            <div class="small text-muted">发件人ID</div>
-                                            <div class="h5 mb-0" id="senderIdDisplay">-</div>
+                                            <div class="text-muted">发件人ID</div>
+                                            <div class="h6 mb-0" id="senderIdDisplay">-</div>
                                         </div>
                                     </div>
-                                    <hr class="my-2">
                                     <div class="text-center">
-                                        <span class="h4 mb-0 text-primary">总费用: <span id="totalCost">0</span> 元</span>
+                                        <span class="h5 mb-0 text-primary">总费用: <span id="totalCost">0</span> 元</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card bg-warning bg-light mb-3">
+                                <div class="card-body py-2">
+                                    <h6 class="mb-2"><i class="bi bi-info-circle"></i> 编码说明 (实际扣费以系统为准)</h6>
+                                    <div class="row text-center small">
+                                        <div class="col-4">
+                                            <div class="text-muted">英文/数字</div>
+                                            <div class="h6 mb-0">≤160字符 = 1条</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="text-muted">中文/混合</div>
+                                            <div class="h6 mb-0">≤70字符 = 1条</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="text-muted">长短信</div>
+                                            <div class="h6 mb-0">自动拆分计费</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -151,11 +176,11 @@ $userInfo = $_SESSION['user_info'];
         
         function countSmsParts(content) {
             const len = content.length;
-            if (len <= 160) return 1;
-            if (len <= 306) return 2;
-            if (len <= 459) return 3;
-            if (len <= 612) return 4;
-            return Math.ceil(len / 153);
+            if (len <= 70) return 1;
+            if (len <= 134) return 2;
+            if (len <= 201) return 3;
+            if (len <= 268) return 4;
+            return Math.ceil(len / 67);
         }
         
         function validateSenderId(senderId) {
@@ -176,7 +201,7 @@ $userInfo = $_SESSION['user_info'];
             document.getElementById('totalSms').textContent = phoneCount * smsCount;
             document.getElementById('totalCost').textContent = totalCost.toFixed(4);
             document.getElementById('charCount').textContent = content.length;
-            document.getElementById('smsCount').textContent = smsCount > 1 ? `(将分成 ${smsCount} 条)` : '';
+            document.getElementById('smsCount').textContent = smsCount > 1 ? '(将分成 ' + smsCount + ' 条)' : '';
             document.getElementById('senderIdDisplay').textContent = senderId || '-';
         }
         

@@ -37,6 +37,11 @@ $userInfo = $_SESSION['user_info'];
                     <li class="nav-item">
                         <a class="nav-link" href="records.php"><i class="bi bi-clock-history"></i> 短信记录</a>
                     </li>
+                    <?php if ($userInfo['role'] === 'admin'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../admin/dashboard.php"><i class="bi bi-gear"></i> 管理后台</a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
@@ -45,7 +50,7 @@ $userInfo = $_SESSION['user_info'];
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
                             <a class="dropdown-item" href="#">
-                                <i class="bi bi-wallet2"></i> 余额: <?php echo $userInfo['balance']; ?> 元
+                                <i class="bi bi-wallet2"></i> 余额: <?php echo number_format($userInfo['balance'], 4); ?> 元
                             </a>
                             <a class="dropdown-item" href="#">
                                 <i class="bi bi-geo-alt"></i> 国家: <?php echo $userInfo['country_code']; ?>
@@ -65,45 +70,42 @@ $userInfo = $_SESSION['user_info'];
         <div class="row">
             <div class="col-md-4 mb-3">
                 <div class="card border-primary">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-2">账户余额</h6>
-                                <h3 class="mb-0 text-primary"><?php echo number_format($userInfo['balance'], 4); ?> 元</h3>
-                            </div>
-                            <div class="bg-primary bg-opacity-10 p-3 rounded">
-                                <i class="bi bi-wallet2 text-primary" style="font-size: 2rem;"></i>
-                            </div>
-                        </div>
+                    <div class="card-body text-center">
+                        <i class="bi bi-wallet2 text-primary" style="font-size: 1.5rem;"></i>
+                        <h6 class="text-muted mt-2 mb-1">账户余额</h6>
+                        <h4 class="mb-0 text-primary"><?php echo number_format($userInfo['balance'], 4); ?> 元</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 mb-3">
                 <div class="card border-success">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-2">短信单价</h6>
-                                <h3 class="mb-0 text-success"><?php echo $userInfo['price']; ?> 元/条</h3>
-                            </div>
-                            <div class="bg-success bg-opacity-10 p-3 rounded">
-                                <i class="bi bi-currency-dollar text-success" style="font-size: 2rem;"></i>
-                            </div>
-                        </div>
+                    <div class="card-body text-center">
+                        <i class="bi bi-currency-dollar text-success" style="font-size: 1.5rem;"></i>
+                        <h6 class="text-muted mt-2 mb-1">短信单价</h6>
+                        <h4 class="mb-0 text-success"><?php echo $userInfo['price']; ?> 元/条</h4>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 mb-3">
                 <div class="card border-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-globe text-info" style="font-size: 1.5rem;"></i>
+                        <h6 class="text-muted mt-2 mb-1">服务国家</h6>
+                        <h4 class="mb-0 text-info"><?php echo $userInfo['country_code']; ?></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-megaphone"></i> 公告</h5>
+                    </div>
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-2">服务国家</h6>
-                                <h3 class="mb-0 text-info"><?php echo $userInfo['country_code']; ?></h3>
-                            </div>
-                            <div class="bg-info bg-opacity-10 p-3 rounded">
-                                <i class="bi bi-globe text-info" style="font-size: 2rem;"></i>
-                            </div>
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle"></i> 欢迎使用短信平台服务。如有疑问请联系客服。
                         </div>
                     </div>
                 </div>
@@ -114,7 +116,7 @@ $userInfo = $_SESSION['user_info'];
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-white">
-                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> 使用指南</h5>
+                        <h5 class="mb-0"><i class="bi bi-lightbulb"></i> 使用指南</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">

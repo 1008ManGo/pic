@@ -37,6 +37,11 @@ $userInfo = $_SESSION['user_info'];
                     <li class="nav-item">
                         <a class="nav-link active" href="records.php"><i class="bi bi-clock-history"></i> 短信记录</a>
                     </li>
+                    <?php if ($userInfo['role'] === 'admin'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../admin/dashboard.php"><i class="bi bi-gear"></i> 管理后台</a>
+                    </li>
+                    <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
@@ -45,7 +50,7 @@ $userInfo = $_SESSION['user_info'];
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
                             <a class="dropdown-item" href="#">
-                                <i class="bi bi-wallet2"></i> 余额: <?php echo $userInfo['balance']; ?> 元
+                                <i class="bi bi-wallet2"></i> 余额: <?php echo number_format($userInfo['balance'], 4); ?> 元
                             </a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="../api/logout.php">
